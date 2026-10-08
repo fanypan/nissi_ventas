@@ -1,0 +1,101 @@
+{
+    "venta_struct": [
+        {
+            "Field": "noventa",
+            "Type": "bigint(20)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "fecha",
+            "Type": "datetime",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        },
+        {
+            "Field": "usuario",
+            "Type": "int(11)",
+            "Null": "YES",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "caja",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "codcliente",
+            "Type": "int(11)",
+            "Null": "YES",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "status",
+            "Type": "int(11)",
+            "Null": "YES",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "tipo_pago_detalle",
+            "Type": "varchar(50)",
+            "Null": "YES",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "totalventa",
+            "Type": "decimal(10,2)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "descuento",
+            "Type": "decimal(10,2)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "abono",
+            "Type": "decimal(10,2)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "pago_con",
+            "Type": "decimal(10,2)",
+            "Null": "YES",
+            "Key": "",
+            "Default": "0.00",
+            "Extra": ""
+        },
+        {
+            "Field": "vuelto",
+            "Type": "decimal(10,2)",
+            "Null": "YES",
+            "Key": "",
+            "Default": "0.00",
+            "Extra": ""
+        }
+    ],
+    "procesar_venta_create": "CREATE DEFINER=`root`@`localhost` PROCEDURE `procesar_venta`(\r\n        IN cod_usuario INT, \r\n        IN cod_cliente INT, \r\n        IN token VARCHAR(50), \r\n        IN tipo_pago INT, \r\n        IN id_caja INT, \r\n        IN descuento INT, \r\n        IN pago_con DECIMAL(10,2), \r\n        IN vuelto DECIMAL(10,2)\r\n    )\nBEGIN\r\n        DECLARE venta INT;\r\n        DECLARE registros INT;\r\n        DECLARE subtotal DECIMAL(10,2);\r\n        DECLARE total DECIMAL(10,2);\r\n        DECLARE a INT;\r\n        SET a = 1;\r\n\r\n        CREATE TEMPORARY TABLE tbl_tmp_tokenuser(\r\n            id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,\r\n            cod_prod BIGINT,\r\n            cant_prod int\r\n        );\r\n\r\n        SET registros = (SELECT COUNT(*) FROM detalle_temp WHERE token_user = token);\r\n\r\n        IF registros > 0 THEN\r\n            INSERT INTO tbl_tmp_tokenuser(cod_prod,cant_prod) \r\n            SELECT codproducto,cantidad FROM detalle_temp WHERE token_user = token;\r\n\r\n            INSERT INTO venta(usuario,caja,codcliente,status,descuento,pago_con,vuelto) \r\n            VALUES(cod_usuario,id_caja,cod_cliente,tipo_pago,descuento,pago_con,vuelto);\r\n            \r\n            SET venta = LAST_INSERT_ID();\r\n\r\n            INSERT INTO detalleventa(noventa,codproducto,cantidad,costo,precio_venta) \r\n            SELECT(venta) as noventa, codproducto,cantidad,costo,precio_venta \r\n            FROM detalle_temp WHERE token_user = token;\r\n\r\n            SET subtotal = (SELECT SUM(cantidad * precio_venta) FROM detalle_temp WHERE token_user = token);\r\n            SET total = subtotal - descuento;\r\n            \r\n            UPDATE venta SET totalventa = total WHERE noventa = venta;\r\n            \r\n            DELETE FROM detalle_temp WHERE token_user = token;\r\n            TRUNCATE TABLE tbl_tmp_tokenuser;\r\n            \r\n            SELECT * FROM venta WHERE noventa = venta;\r\n        ELSE\r\n            SELECT 0;\r\n        END IF;\r\n    END"
+}

@@ -1,0 +1,334 @@
+@import url('fonts/BrixSansRegular.css');
+@import url('fonts/BrixSansBlack.css');
+
+/* Reset completo */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Estilos base - MUY COMPACTOS */
+body {
+    font-family: 'BrixSansRegular', Arial, sans-serif;
+    font-size: 5pt; /* Muy pequeño */
+    line-height: 1.1;
+    background: white;
+}
+
+p, label, span, td, th {
+    font-family: 'BrixSansRegular', Arial, sans-serif;
+    font-size: 5pt;
+    line-height: 1.1;
+    margin: 0;
+    padding: 0;
+}
+
+.h2 {
+    font-family: 'BrixSansBlack', Arial Black, sans-serif;
+    font-size: 7pt;
+    font-weight: bold;
+    margin: 3pt 0 4pt 0; /* MÁS ESPACIO ABAJO */
+    text-align: center;
+}
+
+/* Contenedor principal */
+#page_pdf {
+    width: 170pt;
+    margin: 0 auto;
+    background: white;
+    padding: 4pt;
+    font-size: 5pt;
+}
+
+/* Tablas base */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+#factura_head {
+    margin-bottom: 8pt; /* MÁS ESPACIO DESPUÉS DEL ENCABEZADO */
+}
+
+/* Logo con MÁS ESPACIO */
+.logo_factura {
+    text-align: center;
+    padding: 2pt 0 4pt 0; /* MÁS ESPACIO ABAJO DEL LOGO */
+    margin-bottom: 3pt;
+}
+
+.logo_factura img {
+    max-width: 35pt;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Información empresa con SEPARACIÓN CLARA */
+.info_empresa {
+    text-align: center;
+    padding: 3pt 0 5pt 0; /* MÁS ESPACIO */
+    border-bottom: 1pt dashed #ccc;
+    margin-bottom: 5pt; /* SEPARACIÓN CLARA */
+}
+
+.info_empresa div {
+    margin-bottom: 2pt;
+}
+
+.info_empresa p {
+    margin: 1pt 0; /* MÁS ESPACIO ENTRE LÍNEAS */
+    font-size: 4pt;
+    line-height: 1.2;
+}
+
+/* Caja de información de venta con MÁS ESPACIO */
+.round {
+    border: 0.5pt solid #333;
+    padding: 3pt; /* MÁS PADDING */
+    margin: 3pt 0 6pt 0; /* MÁS ESPACIO ARRIBA Y ABAJO */
+    background: #f9f9f9;
+}
+
+.round p {
+    margin: 1pt 0; /* MÁS ESPACIO ENTRE LÍNEAS */
+    font-size: 4pt;
+    line-height: 1.2;
+}
+
+.round strong {
+    font-size: 4pt;
+    font-weight: bold;
+    display: block;
+    margin: 1.5pt 0; /* MÁS ESPACIO */
+}
+
+/* ESPACIO EXTRA ANTES DE LA TABLA DE PRODUCTOS */
+#factura_detalle {
+    width: 100%;
+    margin: 5pt 0; /* MÁS ESPACIO ARRIBA Y ABAJO */
+    border: none;
+    table-layout: fixed;
+}
+
+/* Encabezados de tabla */
+#factura_detalle thead {
+    border-top: 1pt solid #333;
+    border-bottom: 1pt solid #333;
+}
+
+#factura_detalle thead th {
+    background: #f0f0f0;
+    padding: 1.5pt 0.5pt; /* MÁS PADDING */
+    font-size: 4pt;
+    font-weight: bold;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Distribución de columnas */
+#factura_detalle th:nth-child(1) { width: 30%; text-align: left; }
+#factura_detalle th:nth-child(2) { width: 15%; text-align: center; }
+#factura_detalle th:nth-child(3) { width: 27%; text-align: right; }
+#factura_detalle th:nth-child(4) { width: 28%; text-align: right; }
+
+/* Celdas de datos con MÁS ESPACIO */
+#factura_detalle tbody td {
+    padding: 1pt 0.5pt; /* MÁS PADDING */
+    font-size: 4pt;
+    border-bottom: 0.5pt dotted #ddd;
+    vertical-align: top;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.2;
+}
+
+/* Alineación de columnas de datos */
+#factura_detalle tbody td:nth-child(1) { text-align: left; }
+#factura_detalle tbody td:nth-child(2) { text-align: center; }
+#factura_detalle tbody td:nth-child(3) { text-align: right; }
+#factura_detalle tbody td:nth-child(4) { text-align: right; }
+
+/* Descripción del producto con MÁS ESPACIO */
+#factura_detalle .producto-descripcion {
+    font-weight: bold;
+    font-size: 4pt;
+    background: #f8f8f8;
+    border-top: 0.5pt solid #ddd;
+    padding: 1.5pt 0.5pt; /* MÁS PADDING */
+    text-align: left;
+    line-height: 1.3;
+    white-space: normal; /* PERMITIR MÚLTIPLES LÍNEAS */
+    word-wrap: break-word;
+    margin-bottom: 0.5pt; /* ESPACIO ABAJO */
+}
+
+/* ESPACIO EXTRA ANTES DE LOS TOTALES */
+#detalle_totales {
+    border-top: 2pt solid #333;
+    background: #f5f5f5;
+    margin-top: 4pt; /* MÁS ESPACIO ARRIBA */
+}
+
+#detalle_totales td {
+    padding: 1.5pt 0.5pt; /* MÁS PADDING */
+    font-size: 4pt;
+    border: none;
+    line-height: 1.3;
+}
+
+#detalle_totales td:nth-child(3) { 
+    text-align: right; 
+    font-weight: bold;
+}
+
+#detalle_totales td:nth-child(4) { 
+    text-align: right; 
+    font-weight: bold;
+}
+
+/* Línea separadora en totales */
+#detalle_totales p {
+    border-bottom: 1pt dashed #666;
+    margin: 2pt 0; /* MÁS ESPACIO */
+    padding: 0;
+    height: 1pt;
+}
+
+/* Total final */
+#detalle_totales tr:last-child td {
+    font-size: 5pt;
+    font-weight: bold;
+    border-top: 1pt solid #333;
+    padding-top: 2pt; /* MÁS ESPACIO ARRIBA */
+    background: #e8e8e8;
+}
+
+/* MENSAJE FINAL CON MUCHO MÁS ESPACIO */
+.mensaje-final {
+    margin-top: 8pt; /* MUCHO MÁS ESPACIO ARRIBA */
+    text-align: center;
+    border-top: 1pt dashed #666;
+    padding: 4pt 2pt 3pt 2pt; /* MÁS PADDING */
+    background: #f9f9f9;
+}
+
+.label_gracias {
+    font-family: 'BrixSansBlack', Arial Black, sans-serif;
+    font-weight: bold;
+    font-style: italic;
+    text-align: center;
+    margin: 2pt 0; /* MÁS ESPACIO ENTRE LÍNEAS */
+    font-size: 5pt;
+    line-height: 1.3;
+}
+
+/* Primera línea del mensaje */
+.mensaje-final .label_gracias:first-child {
+    font-size: 6pt;
+    color: #333;
+    margin-bottom: 3pt; /* ESPACIO EXTRA ABAJO */
+}
+
+/* Segunda línea */
+.mensaje-final .label_gracias:last-child {
+    font-size: 4pt;
+    color: #666;
+    font-style: normal;
+    margin-top: 2pt; /* ESPACIO EXTRA ARRIBA */
+}
+
+/* Utilidades */
+.textright { text-align: right; }
+.textleft { text-align: left; }
+.textcenter { text-align: center; }
+
+/* Anulada */
+.anulada {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    font-size: 16pt;
+    color: rgba(255, 0, 0, 0.7);
+    font-weight: bold;
+    z-index: 1000;
+    text-transform: uppercase;
+}
+
+/* ESPACIADO FORZADO ENTRE FILAS DE LA TABLA PRINCIPAL */
+#factura_head tr {
+    margin-bottom: 2pt;
+}
+
+/* ESPACIO DESPUÉS DE CADA FILA DEL ENCABEZADO */
+#factura_head tr:first-child td {
+    padding-bottom: 3pt; /* ESPACIO DESPUÉS DEL LOGO */
+}
+
+#factura_head tr:nth-child(2) td {
+    padding-bottom: 4pt; /* ESPACIO DESPUÉS DE INFO EMPRESA */
+}
+
+#factura_head tr:last-child td {
+    padding-bottom: 3pt; /* ESPACIO DESPUÉS DE INFO VENTA */
+}
+
+/* ESPACIO ENTRE PRODUCTOS */
+#detalle_productos tr.producto-descripcion {
+    margin-top: 2pt;
+}
+
+/* Estilos para impresión */
+@media print {
+    #page_pdf {
+        width: 58mm;
+        margin: 0;
+        padding: 2mm;
+    }
+    
+    .logo_factura img {
+        max-width: 25pt;
+    }
+    
+    body {
+        font-size: 4pt;
+    }
+    
+    .h2 {
+        font-size: 6pt;
+        margin: 2pt 0 3pt 0;
+    }
+    
+    /* Mantener espaciado en impresión */
+    .info_empresa {
+        padding: 2pt 0 3pt 0;
+        margin-bottom: 3pt;
+    }
+    
+    .round {
+        margin: 2pt 0 4pt 0;
+        padding: 2pt;
+    }
+    
+    .mensaje-final {
+        margin-top: 5pt;
+        padding: 3pt 1pt 2pt 1pt;
+    }
+    
+    #factura_detalle {
+        margin: 3pt 0;
+    }
+    
+    #detalle_totales {
+        margin-top: 3pt;
+    }
+}
+
+/* Asegurar que nada se desborde */
+* {
+    max-width: 100% !important;
+    word-break: break-word;
+}

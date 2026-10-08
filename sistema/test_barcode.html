@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test de Código de Barras - Diagnóstico Escáner</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+            color: #000;
+            padding: 20px;
+        }
+        h1 { text-align: center; color: #333; }
+        .test-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+        .test-item {
+            border: 2px solid #333;
+            padding: 20px;
+            text-align: center;
+            background: #fff;
+            width: 350px;
+        }
+        .test-item h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            background: #333;
+            color: #fff;
+            padding: 5px;
+        }
+        .test-item p {
+            margin: 5px 0;
+            font-size: 12px;
+            color: #666;
+        }
+        svg { display: block; margin: 10px auto; }
+        .instructions {
+            background: #ffffcc;
+            border: 2px solid #cc0;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 700px;
+            font-size: 14px;
+        }
+        .result-box {
+            background: #f0f0f0;
+            border: 2px solid #333;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 700px;
+            text-align: center;
+        }
+        #scanInput {
+            font-size: 24px;
+            padding: 10px;
+            width: 300px;
+            text-align: center;
+            border: 3px solid #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔫 TEST DE ESCÁNER - Apunta tu pistola a cada código</h1>
+
+    <div class="instructions">
+        <strong>INSTRUCCIONES:</strong><br>
+        1. Haz clic en el cuadro verde de abajo (para que el cursor quede ahí).<br>
+        2. Apunta tu escáner SATE a cada código de barras en la pantalla, uno por uno.<br>
+        3. Si el escáner lo lee, el número aparecerá en el cuadro verde.<br>
+        4. Dime cuáles leyó y cuáles no.
+    </div>
+
+    <div class="result-box">
+        <strong>⬇️ HAZ CLICK AQUÍ PRIMERO y luego escanea:</strong><br><br>
+        <input type="text" id="scanInput" placeholder="El código aparecerá aquí..." autofocus>
+        <p id="scanResult"></p>
+    </div>
+
+    <div class="test-grid">
+        <!-- Test 1: CODE128 con 6 dígitos -->
+        <div class="test-item">
+            <h3>TEST 1: CODE128 (6 dígitos)</h3>
+            <svg id="barcode1"></svg>
+            <p>Valor: 123456</p>
+        </div>
+
+        <!-- Test 2: CODE128 con 13 dígitos -->
+        <div class="test-item">
+            <h3>TEST 2: CODE128 (13 dígitos)</h3>
+            <svg id="barcode2"></svg>
+            <p>Valor: 7796431596139</p>
+        </div>
+
+        <!-- Test 3: EAN13 -->
+        <div class="test-item">
+            <h3>TEST 3: EAN-13</h3>
+            <svg id="barcode3"></svg>
+            <p>Valor: 7796431596139 (con guard bars)</p>
+        </div>
+
+        <!-- Test 4: CODE39 -->
+        <div class="test-item">
+            <h3>TEST 4: CODE39 (6 dígitos)</h3>
+            <svg id="barcode4"></svg>
+            <p>Valor: 123456</p>
+        </div>
+
+        <!-- Test 5: UPC-A -->
+        <div class="test-item">
+            <h3>TEST 5: UPC-A</h3>
+            <svg id="barcode5"></svg>
+            <p>Valor: 123456789012</p>
+        </div>
+
+        <!-- Test 6: EAN-8 -->
+        <div class="test-item">
+            <h3>TEST 6: EAN-8</h3>
+            <svg id="barcode6"></svg>
+            <p>Valor: 12345670</p>
+        </div>
+
+        <!-- Test 7: Codabar -->
+        <div class="test-item">
+            <h3>TEST 7: Codabar</h3>
+            <svg id="barcode7"></svg>
+            <p>Valor: A123456A</p>
+        </div>
+
+        <!-- Test 8: ITF-14 -->
+        <div class="test-item">
+            <h3>TEST 8: ITF-14</h3>
+            <svg id="barcode8"></svg>
+            <p>Valor: 12345678901231</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuración común: barras grandes y gruesas para que el escáner las lea bien
+        var commonOpts = {
+            width: 2.5,
+            height: 100,
+            fontSize: 16,
+            margin: 15,
+            displayValue: true,
+            background: "#ffffff",
+            lineColor: "#000000"
+        };
+
+        // Test 1: CODE128 con 6 dígitos
+        try {
+            JsBarcode("#barcode1", "123456", Object.assign({}, commonOpts, { format: "CODE128" }));
+        } catch(e) { document.getElementById("barcode1").innerHTML = "ERROR: " + e.message; }
+
+        // Test 2: CODE128 con 13 dígitos
+        try {
+            JsBarcode("#barcode2", "7796431596139", Object.assign({}, commonOpts, { format: "CODE128" }));
+        } catch(e) { document.getElementById("barcode2").innerHTML = "ERROR: " + e.message; }
+
+        // Test 3: EAN-13
+        try {
+            JsBarcode("#barcode3", "7796431596139", Object.assign({}, commonOpts, { format: "EAN13", flat: false }));
+        } catch(e) { document.getElementById("barcode3").innerHTML = "ERROR: " + e.message; }
+
+        // Test 4: CODE39
+        try {
+            JsBarcode("#barcode4", "123456", Object.assign({}, commonOpts, { format: "CODE39" }));
+        } catch(e) { document.getElementById("barcode4").innerHTML = "ERROR: " + e.message; }
+
+        // Test 5: UPC-A
+        try {
+            JsBarcode("#barcode5", "123456789012", Object.assign({}, commonOpts, { format: "UPC" }));
+        } catch(e) { document.getElementById("barcode5").innerHTML = "ERROR: " + e.message; }
+
+        // Test 6: EAN-8
+        try {
+            JsBarcode("#barcode6", "12345670", Object.assign({}, commonOpts, { format: "EAN8", flat: false }));
+        } catch(e) { document.getElementById("barcode6").innerHTML = "ERROR: " + e.message; }
+
+        // Test 7: Codabar
+        try {
+            JsBarcode("#barcode7", "A123456A", Object.assign({}, commonOpts, { format: "codabar" }));
+        } catch(e) { document.getElementById("barcode7").innerHTML = "ERROR: " + e.message; }
+
+        // Test 8: ITF-14
+        try {
+            JsBarcode("#barcode8", "12345678901231", Object.assign({}, commonOpts, { format: "ITF14" }));
+        } catch(e) { document.getElementById("barcode8").innerHTML = "ERROR: " + e.message; }
+
+        // Listener para detectar qué escaneó
+        var input = document.getElementById("scanInput");
+        input.addEventListener("change", function() {
+            var val = this.value.trim();
+            document.getElementById("scanResult").innerHTML = 
+                "<strong style='color:green; font-size:20px;'>✅ ESCÁNER LEYÓ: " + val + "</strong>";
+            setTimeout(function() { input.value = ""; input.focus(); }, 3000);
+        });
+        input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                var val = this.value.trim();
+                document.getElementById("scanResult").innerHTML = 
+                    "<strong style='color:green; font-size:20px;'>✅ ESCÁNER LEYÓ: " + val + "</strong>";
+                setTimeout(function() { input.value = ""; input.focus(); }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

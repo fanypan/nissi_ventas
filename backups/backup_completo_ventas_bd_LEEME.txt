@@ -1,0 +1,95 @@
+# BACKUP COMPLETO - BASE DE DATOS VENTAS_BD
+
+## Información del Backup
+- **Fecha de Creación:** 26 de Julio de 2026
+- **Base de Datos:** ventas_bd
+- **Servidor Original:** localhost
+- **Usuario:** root
+- **Tamaño:** ~515 KB
+- **Tipo:** Dump SQL completo (estructura + datos)
+
+## Tablas Incluidas (31 tablas)
+1. ajuste_stock
+2. bancos
+3. caja
+4. categoria
+5. categoria_marca
+6. cliente
+7. compras
+8. configuracion
+9. consumo_insumos
+10. detalle_recibo
+11. detalle_recibo_compra
+12. detalle_temp
+13. detalle_temp_compra
+14. detalleventa
+15. egresos
+16. entradas
+17. insumos
+18. lotes
+19. marca
+20. marca_tamano
+21. motivos_ajuste
+22. movimientos_lotes
+23. pagos_qr
+24. pagos_tarjeta
+25. producto
+26. proveedor
+27. rol
+28. tamano
+29. transferencias
+30. usuario
+31. venta
+
+## Cómo Restaurar el Backup
+
+### Opción 1: Usando MySQL desde la línea de comandos
+```bash
+mysql -u root -h localhost < backup_completo_ventas_bd.sql
+```
+
+### Opción 2: Crear base de datos nueva y restaurar
+```bash
+mysql -u root -h localhost -e "CREATE DATABASE ventas_bd_nueva;"
+mysql -u root -h localhost ventas_bd_nueva < backup_completo_ventas_bd.sql
+```
+
+### Opción 3: Usando phpMyAdmin
+1. Acceder a phpMyAdmin
+2. Ir a "Importar"
+3. Seleccionar el archivo `backup_completo_ventas_bd.sql`
+4. Hacer clic en "Aceptar"
+
+### Opción 4: Usando MySQL Workbench
+1. Abrir MySQL Workbench
+2. Ir a "Server" > "Data Import"
+3. Seleccionar "Import from Self-Contained File"
+4. Elegir el archivo `backup_completo_ventas_bd.sql`
+5. Seleccionar la base de datos destino
+6. Hacer clic en "Start Import"
+
+## Requerimientos
+- MySQL 5.7+ o MariaDB 10.0+
+- Acceso de usuario con privilegios CREATE, DROP, INSERT, UPDATE, DELETE, SELECT
+- Suficiente espacio en disco (~1-2 MB para la base de datos descomprimida)
+
+## Notas Importantes
+- El backup incluye DROP TABLE IF EXISTS, por lo que si la base de datos ya existe, será sobrescrita
+- Los datos están en formato UTF-8
+- Las foreign keys están incluidas
+- Los AUTO_INCREMENT se preservarán
+
+## Verificación Después de Restaurar
+```sql
+-- Verificar que la base de datos se creó
+SHOW DATABASES LIKE 'ventas_bd%';
+
+-- Ver cantidad de tablas
+SELECT COUNT(*) as total_tablas FROM information_schema.tables WHERE table_schema='ventas_bd';
+
+-- Ver cantidad de registros en tabla producto
+SELECT COUNT(*) FROM ventas_bd.producto;
+```
+
+---
+Backup generado automáticamente para migración a otro sistema.

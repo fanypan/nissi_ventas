@@ -1,0 +1,17 @@
+# Logs
+*.log
+sistema/logs/
+sistema/debug_post.log
+import_debug.log
+
+# Archivos de depuración y temporales
+out.txt
+out2.txt
+out_index.txt
+Untitled-1.txt
+sistema/diag_output.txt
+*.tmp
+
+# Entorno y Sistema Operativo
+.DS_Store
+Thumbs.db
