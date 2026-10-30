@@ -16,16 +16,18 @@ register_shutdown_function(function () {
 	}
 });
 
-// Log incoming request for debugging
-file_put_contents(__DIR__ . '/logs/ajax_request.log', date('Y-m-d H:i:s') . " POST: " . json_encode(isset($_POST) ? $_POST : []) . " FILES: " . json_encode(isset($_FILES) ? $_FILES : []) . PHP_EOL, FILE_APPEND);
+// Log incoming request for debugging. El token de SIFEN no se escribe en el log.
+$postParaLog = isset($_POST) ? $_POST : [];
+if (isset($postParaLog['fe_api_token']) && $postParaLog['fe_api_token'] !== '') {
+	$postParaLog['fe_api_token'] = '[oculto]';
+}
+file_put_contents(__DIR__ . '/logs/ajax_request.log', date('Y-m-d H:i:s') . " POST: " . json_encode($postParaLog) . " FILES: " . json_encode(isset($_FILES) ? $_FILES : []) . PHP_EOL, FILE_APPEND);
 
 
 
 
 include_once __DIR__ . "/../conexion.php";
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
+nissi_ensure_session();
 
 if (!function_exists('ensurePrecioMayoristaColumn')) {
 	function ensurePrecioMayoristaColumn($conection) {
@@ -562,6 +564,7 @@ if (!empty($_POST)) {
 		$descuento  = !empty($_POST['descuento']) ? (float)$_POST['descuento'] : 0;
 		$pago_con   = !empty($_POST['pago_con']) ? (float)$_POST['pago_con'] : 0;
 		$vuelto     = !empty($_POST['vuelto']) ? (float)$_POST['vuelto'] : 0;
+		$comprobante = !empty($_POST['comprobante']) ? (int)$_POST['comprobante'] : 1;
 		$token      = md5($_SESSION['idUser']);
 		$usuario    = $_SESSION['idUser'];
 
@@ -574,6 +577,42 @@ if (!empty($_POST)) {
 
 			if ($result_detalle > 0) {
 				$data = mysqli_fetch_assoc($query_procesar);
+				while (mysqli_more_results($conection)) {
+					mysqli_next_result($conection);
+					if ($extra = mysqli_store_result($conection)) {
+						mysqli_free_result($extra);
+					}
+				}
+
+				if ($comprobante === 2) {
+					try {
+						require_once __DIR__ . '/includes/sifen_client.php';
+						$cfgFe = sifen_get_config($conection);
+						if (!empty($cfgFe['activo']) && (int)$cfgFe['activo'] === 1) {
+							$fe = sifen_emitir($conection, (int)$data['noventa']);
+							$kudeHtml = '';
+							if (($fe['status'] ?? '') === 'approved' && !empty($fe['document_id'])) {
+								$kudeHtml = sifen_bajar_kude_html($cfgFe['api_url'], $cfgFe['api_token'], $fe['document_id']);
+							}
+							$data['fe'] = [
+								'status' => $fe['status'] ?? 'error',
+								'cdc' => $fe['cdc'] ?? null,
+								'kude_url' => $fe['kude_url'] ?? '',
+								'kude_html' => $kudeHtml,
+								'error' => $fe['error'] ?? null,
+							];
+						}
+					} catch (Throwable $e) {
+						error_log('SIFEN procesarVenta: ' . $e->getMessage());
+						$data['fe'] = [
+							'status' => 'error',
+							'cdc' => null,
+							'kude_url' => '',
+							'error' => 'No se pudo emitir la factura electrónica.',
+						];
+					}
+				}
+
 				echo json_encode($data, JSON_UNESCAPED_UNICODE);
 			} else {
 				echo 'error';
@@ -581,6 +620,98 @@ if (!empty($_POST)) {
 		} else {
 			echo 'error';
 		}
+		mysqli_close($conection);
+		exit;
+	}
+
+	if ($_POST['action'] == 'updateConfigFE') {
+		if (empty($_SESSION['rol']) || (int)$_SESSION['rol'] !== 1) {
+			echo json_encode(['cod' => '03', 'msg' => 'Solo el administrador puede configurar la facturación electrónica.']);
+			mysqli_close($conection);
+			exit;
+		}
+
+		$apiUrl = trim($_POST['fe_api_url'] ?? '');
+		$apiToken = trim($_POST['fe_api_token'] ?? '');
+		$ambiente = ($_POST['fe_ambiente'] ?? 'test') === 'produccion' ? 'produccion' : 'test';
+		$establecimiento = trim($_POST['fe_establecimiento'] ?? '001');
+		$punto = trim($_POST['fe_punto'] ?? '001');
+		$moneda = trim($_POST['fe_moneda'] ?? 'PYG');
+		$iva = (int)($_POST['fe_iva'] ?? 10);
+		$timbrado = trim($_POST['fe_timbrado'] ?? '');
+		$activo = !empty($_POST['fe_activo']) ? 1 : 0;
+
+		if (!in_array($iva, [0, 5, 10], true)) {
+			$iva = 10;
+		}
+		if ($establecimiento === '') {
+			$establecimiento = '001';
+		}
+		if ($punto === '') {
+			$punto = '001';
+		}
+		if ($moneda === '') {
+			$moneda = 'PYG';
+		}
+
+		$actual = mysqli_query($conection, "SELECT id, api_token FROM config_facturacion_electronica ORDER BY id ASC LIMIT 1");
+		$row = ($actual && mysqli_num_rows($actual) > 0) ? mysqli_fetch_assoc($actual) : null;
+		if ($apiToken === '' && $row) {
+			$apiToken = (string)$row['api_token'];
+		}
+
+		if ($row) {
+			$stmt = mysqli_prepare(
+				$conection,
+				"UPDATE config_facturacion_electronica
+				 SET api_url = ?, api_token = ?, ambiente = ?, establecimiento = ?, punto = ?, moneda = ?, iva_por_defecto = ?, activo = ?, timbrado = ?
+				 WHERE id = ?"
+			);
+			$id = (int)$row['id'];
+			mysqli_stmt_bind_param($stmt, 'ssssssiisi', $apiUrl, $apiToken, $ambiente, $establecimiento, $punto, $moneda, $iva, $activo, $timbrado, $id);
+		} else {
+			$stmt = mysqli_prepare(
+				$conection,
+				"INSERT INTO config_facturacion_electronica
+				 (api_url, api_token, ambiente, establecimiento, punto, moneda, iva_por_defecto, activo, timbrado)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+			);
+			mysqli_stmt_bind_param($stmt, 'ssssssiis', $apiUrl, $apiToken, $ambiente, $establecimiento, $punto, $moneda, $iva, $activo, $timbrado);
+		}
+
+		$ok = $stmt && mysqli_stmt_execute($stmt);
+		if ($stmt) {
+			mysqli_stmt_close($stmt);
+		}
+		echo json_encode($ok
+			? ['cod' => '00', 'msg' => 'Facturación electrónica guardada.']
+			: ['cod' => '02', 'msg' => 'No se pudo guardar la configuración.']);
+		mysqli_close($conection);
+		exit;
+	}
+
+	if ($_POST['action'] == 'probarConexionFE') {
+		if (empty($_SESSION['rol']) || (int)$_SESSION['rol'] !== 1) {
+			echo json_encode(['cod' => '03', 'msg' => 'Solo el administrador puede probar la conexión.']);
+			mysqli_close($conection);
+			exit;
+		}
+
+		require_once __DIR__ . '/includes/sifen_client.php';
+		$cfgFe = sifen_get_config($conection);
+		$url = trim($_POST['fe_api_url'] ?? '');
+		$token = trim($_POST['fe_api_token'] ?? '');
+		if ($url === '') {
+			$url = $cfgFe['api_url'];
+		}
+		if ($token === '') {
+			$token = $cfgFe['api_token'];
+		}
+		$salud = sifen_health($url, $token);
+		echo json_encode([
+			'cod' => !empty($salud['ok']) ? '00' : '02',
+			'msg' => $salud['msg'] ?? 'Sin respuesta de la API.',
+		]);
 		mysqli_close($conection);
 		exit;
 	}

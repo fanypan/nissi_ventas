@@ -1897,25 +1897,128 @@ function generarPDF_compra(cliente, factura) {
 }
 
 function generarPDF(cliente, factura) {
-    var ancho = 1000;
-    var alto = 800;
-    //Calcularposicion x,y para centrar la ventana
-    var x = parseInt((window.screen.width / 2) - (ancho / 2));
-    var y = parseInt((window.screen.height / 2) - (alto / 2));
-
-    $url = 'factura/generaFactura.php?cl=' + cliente + '&f=' + factura;
-    window.open($url, "Factura", "left=" + x + ",top=" + y + ",height=" + alto + ",width=" + ancho + ",scrollbar=si,location=no,resizable=si,menubar=no");
+    imprimirUrlSilenciosa('factura/generaFactura.php?cl=' + cliente + '&f=' + factura, 'Factura');
 }
 
 function generarPDFTicket(cliente, factura) {
+    imprimirUrlSilenciosa('factura/generaTicket.php?cl=' + cliente + '&f=' + factura, 'Ticket');
+}
+
+function abrirVentanaComprobante(url, titulo) {
     var ancho = 1000;
     var alto = 800;
-    //Calcularposicion x,y para centrar la ventana
     var x = parseInt((window.screen.width / 2) - (ancho / 2));
     var y = parseInt((window.screen.height / 2) - (alto / 2));
+    window.open(url, titulo || 'KuDE', 'left=' + x + ',top=' + y + ',height=' + alto + ',width=' + ancho + ',scrollbar=si,location=no,resizable=si,menubar=no');
+}
 
-    $url = 'factura/generaTicket.php?cl=' + cliente + '&f=' + factura;
-    window.open($url, "Factura", "left=" + x + ",top=" + y + ",height=" + alto + ",width=" + ancho + ",scrollbar=si,location=no,resizable=si,menubar=no");
+function urlsAgenteImpresion() {
+    return [
+        'https://127.0.0.1:4171',
+        'http://127.0.0.1:4171',
+        'https://localhost:4171',
+        'http://localhost:4171'
+    ];
+}
+
+function fetchAgente(url, options) {
+    var opts = Object.assign({ mode: 'cors', cache: 'no-store' }, options || {});
+    var loopback = Object.assign({}, opts, { targetAddressSpace: 'loopback' });
+    return fetch(url, loopback).catch(function () {
+        return fetch(url, opts);
+    });
+}
+
+function agenteImprime(payload) {
+    var body = JSON.stringify(payload);
+    var urls = urlsAgenteImpresion();
+    function intento(i) {
+        if (i >= urls.length) {
+            return Promise.resolve(false);
+        }
+        return fetchAgente(urls[i] + '/print', {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: body,
+            signal: AbortSignal.timeout(20000)
+        }).then(function (res) {
+            if (!res.ok) {
+                return intento(i + 1);
+            }
+            return res.json().then(function (data) {
+                return !!(data && (data.ok || data.success));
+            }).catch(function () {
+                return false;
+            });
+        }).catch(function () {
+            return intento(i + 1);
+        });
+    }
+    return intento(0);
+}
+
+function bytesABase64(bytes) {
+    var bin = '';
+    var paso = 0x8000;
+    for (var i = 0; i < bytes.length; i += paso) {
+        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + paso));
+    }
+    return btoa(bin);
+}
+
+function esPdf(bytes) {
+    return bytes.length >= 4 && bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;
+}
+
+function enviarAlAgenteDesdeUrl(url, titulo) {
+    return fetch(url, { credentials: 'same-origin' }).then(function (res) {
+        if (!res.ok) {
+            throw new Error('documento');
+        }
+        return res.arrayBuffer().then(function (buf) {
+            var bytes = new Uint8Array(buf);
+            var tipo = (res.headers.get('content-type') || '').toLowerCase();
+            if (tipo.indexOf('pdf') !== -1 || esPdf(bytes)) {
+                return agenteImprime({ pdf: bytesABase64(bytes), title: titulo });
+            }
+            return agenteImprime({ html: new TextDecoder('utf-8').decode(bytes), title: titulo });
+        });
+    }).catch(function () {
+        return false;
+    });
+}
+
+function imprimirUrlSilenciosa(url, titulo) {
+    return enviarAlAgenteDesdeUrl(url, titulo).then(function (ok) {
+        if (!ok) {
+            abrirVentanaComprobante(url, titulo);
+        }
+        return ok;
+    });
+}
+
+function imprimirTrasVenta(info, comprobante) {
+    var trabajo;
+    if (info.fe && info.fe.kude_html) {
+        trabajo = agenteImprime({ html: info.fe.kude_html, title: 'KuDE' }).then(function (ok) {
+            if (!ok && info.fe.kude_url) {
+                abrirVentanaComprobante(info.fe.kude_url, 'KuDE');
+            }
+        });
+    } else if (info.fe && info.fe.kude_url) {
+        trabajo = imprimirUrlSilenciosa(info.fe.kude_url, 'KuDE');
+    } else {
+        if (info.fe && (info.fe.status === 'error' || info.fe.status === 'rejected')) {
+            alert('La venta se registró, pero la factura electrónica no se pudo emitir. ' + (info.fe.error || ''));
+        } else if (info.fe && (info.fe.status === 'queued' || info.fe.status === 'processing' || info.fe.status === 'contingency')) {
+            alert('La venta se registró. La factura electrónica sigue en proceso en SIFEN.');
+        }
+        var urlLocal = comprobante == 1
+            ? 'factura/generaTicket.php?cl=' + info.codcliente + '&f=' + info.noventa
+            : 'factura/generaFactura.php?cl=' + info.codcliente + '&f=' + info.noventa;
+        trabajo = imprimirUrlSilenciosa(urlLocal, comprobante == 1 ? 'Ticket' : 'Factura');
+    }
+    return Promise.resolve(trabajo);
 }
 
 function del_product_detalle(correlativo) {
@@ -3663,7 +3766,8 @@ function facturar() {
                     tipoPago: tipoPago,
                     descuento: descuento,
                     pago_con: 0,
-                    vuelto: 0
+                    vuelto: 0,
+                    comprobante: comprobante
                 },
                 success: function (response) {
                     console.log("Respuesta procesarVenta:", response);
@@ -3687,13 +3791,11 @@ function facturar() {
                                     console.log("Respuesta guardarDetallesPago:", resSave);
                                     if (resSave.cod == '00') {
                                         sessionStorage.removeItem(nombreStorage);
-                                        // Generar PDF
-                                        if (comprobante == 1) {
-                                            generarPDFTicket(info.codcliente, info.noventa);
-                                        } else {
-                                            generarPDF(info.codcliente, info.noventa);
-                                        }
-                                        location.reload();
+                                        Promise.resolve(imprimirTrasVenta(info, comprobante)).then(function () {
+                                            location.reload();
+                                        }, function () {
+                                            location.reload();
+                                        });
                                     } else {
                                         alert('Error al guardar detalles del pago: ' + resSave.msg);
                                     }
@@ -3797,19 +3899,19 @@ function ejecutarFacturar(action, codcliente, tipoPago, descuento, comprobante, 
             tipoPago: tipoPago,
             descuento: descuento,
             pago_con: pago_con,
-            vuelto: vuelto
+            vuelto: vuelto,
+            comprobante: comprobante
         },
 
         success: function (response) {
             console.log(response);
             if (response != 'error') {
                 var info = JSON.parse(response);
-                if (comprobante == 1) {
-                    generarPDFTicket(info.codcliente, info.noventa);
-                } else if (comprobante == 2) {
-                    generarPDF(info.codcliente, info.noventa);
-                }
-                location.reload();
+                Promise.resolve(imprimirTrasVenta(info, comprobante)).then(function () {
+                    location.reload();
+                }, function () {
+                    location.reload();
+                });
             } else {
                 console.log('no data');
             }

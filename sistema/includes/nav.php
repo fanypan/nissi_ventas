@@ -92,6 +92,7 @@
 				<ul>
 					<li><a href="configuracion.php"><i class="fas fa-file-alt"></i> Datos Empresa</a></li>
 					<?php if ($_SESSION['rol'] == 1) { ?>
+						<li><a href="configuracion_factura_electronica.php"><i class="fas fa-file-invoice"></i> Configuración factura electrónica</a></li>
 						<li><a href="uso_insumos.php" style="background: #34495e; color: #fff;"><i class="fas fa-utensils"></i> Consumo de Insumos</a></li>
 					<?php } ?>
 				</ul>

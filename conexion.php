@@ -1,14 +1,18 @@
 <?php
-$host = 'localhost';
-$user = 'root';
-$password = '';
-$db = 'ventas_bd';
+$host = getenv('DB_HOST') ?: 'localhost';
+$user = getenv('DB_USER') ?: 'root';
+$dbPassword = getenv('DB_PASSWORD');
+$password = ($dbPassword === false) ? '' : $dbPassword;
+$db = getenv('DB_NAME') ?: 'ventas_bd';
 
 $conection = mysqli_connect($host, $user, $password, $db);
 
 if (!$conection) {
     die("Error en la conexión: " . mysqli_connect_error());
 }
+
+mysqli_set_charset($conection, 'utf8mb4');
+
 
 if (!function_exists('ensureProductoColumns')) {
     function ensureProductoColumns($conection) {
@@ -76,6 +80,53 @@ if (!function_exists('ensureRelationTables')) {
 }
 
 ensureRelationTables($conection);
+
+if (!function_exists('ensureFacturacionTables')) {
+    function ensureFacturacionTables($conection) {
+        $tables = [
+            'config_facturacion_electronica' => "CREATE TABLE IF NOT EXISTS `config_facturacion_electronica` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `api_url` VARCHAR(255) NULL DEFAULT NULL,
+                `api_token` VARCHAR(255) NULL DEFAULT NULL,
+                `ambiente` VARCHAR(10) NOT NULL DEFAULT 'test',
+                `establecimiento` VARCHAR(10) NOT NULL DEFAULT '001',
+                `punto` VARCHAR(10) NOT NULL DEFAULT '001',
+                `moneda` VARCHAR(5) NOT NULL DEFAULT 'PYG',
+                `iva_por_defecto` INT NOT NULL DEFAULT 10,
+                `activo` TINYINT NOT NULL DEFAULT 0,
+                `timbrado` VARCHAR(20) NULL DEFAULT NULL,
+                `date_add` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `date_upd` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+            'factura_electronica' => "CREATE TABLE IF NOT EXISTS `factura_electronica` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `noventa` INT NOT NULL,
+                `document_id` VARCHAR(64) NULL DEFAULT NULL,
+                `status` VARCHAR(20) NOT NULL DEFAULT 'queued',
+                `cdc` VARCHAR(44) NULL DEFAULT NULL,
+                `qr_url` VARCHAR(500) NULL DEFAULT NULL,
+                `kude_path` VARCHAR(500) NULL DEFAULT NULL,
+                `numero` INT NULL DEFAULT NULL,
+                `idempotency_key` VARCHAR(191) NULL DEFAULT NULL,
+                `error_message` TEXT NULL,
+                `request_payload` TEXT NULL,
+                `response_raw` MEDIUMTEXT NULL,
+                `date_add` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY `uk_fe_idempotency` (`idempotency_key`),
+                KEY `idx_fe_noventa` (`noventa`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+        ];
+
+        foreach ($tables as $table => $sql) {
+            $check = mysqli_query($conection, "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '$table'");
+            if ($check && mysqli_num_rows($check) == 0) {
+                @mysqli_query($conection, $sql);
+            }
+        }
+    }
+}
+
+ensureFacturacionTables($conection);
 
 if (!function_exists('formatCant')) {
     function formatCant($cantidad) {
