@@ -1,7 +1,7 @@
 <?php 
 	// Buscador simplificado para Ajuste de Stock
 	include "../../conexion.php";
-	session_start();
+	nissi_ensure_session();
 
 	$por_pagina = 5;
 	if (isset($_POST['busquedaProd'])) {

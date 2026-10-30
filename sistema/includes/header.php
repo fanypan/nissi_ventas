@@ -1,8 +1,8 @@
 <?php 
 	
-	if(empty($_SESSION['active']))
-	{
-		header('location: ../');
+	if (empty($_SESSION['active'])) {
+		header('Location: /');
+		exit;
 	}
 	include_once "functions.php";
 ?>

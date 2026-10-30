@@ -1,6 +1,6 @@
 <?php 
 	include "../../conexion.php";
-	session_start();
+	nissi_ensure_session();
 
 	$por_pagina = 9;
 	if (isset($_POST['busquedaInsumo'])) {

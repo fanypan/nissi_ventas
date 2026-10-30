@@ -1,5 +1,5 @@
 <?php
-session_start();
+nissi_ensure_session();
 if ($_SESSION['rol'] != 1 && $_SESSION['rol'] != 2) {
 	header("location: ./");
 }

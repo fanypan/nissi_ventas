@@ -1,6 +1,6 @@
 <?php
 include "../conexion.php";
-session_start();
+nissi_ensure_session();
 $_SESSION['idUser'] = 1;
 
 // Simulate active caja for foreign key

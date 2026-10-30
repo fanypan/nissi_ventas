@@ -6,7 +6,7 @@
  * Ejecutar desde el navegador: http://localhost/Sistemaventas/sistema/importar_fotos.php
  * Solo admins pueden ejecutar este script.
  */
-session_start();
+nissi_ensure_session();
 include "../conexion.php";
 
 if (empty($_SESSION['active']) || $_SESSION['rol'] != 1) {

@@ -1,6 +1,6 @@
 <?php
 // Simular sesión
-session_start();
+nissi_ensure_session();
 $_SESSION['idUser'] = 1;
 
 // Simular POST

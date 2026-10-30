@@ -1,7 +1,7 @@
 <?php 
 
 	include "../../conexion.php";
-	session_start();
+	nissi_ensure_session();
 	
 	 //Extraer datos del detalle_temp
 	//print_r($_POST);

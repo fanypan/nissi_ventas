@@ -7,7 +7,7 @@ if (!$conection) {
     die("Connection failed: " . mysqli_connect_error());
 }
 
-session_start();
+nissi_ensure_session();
 $_SESSION['idUser'] = 1; e
 
 $_POST = [

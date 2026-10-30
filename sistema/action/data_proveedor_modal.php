@@ -1,6 +1,6 @@
 <?php 
 	include "../../conexion.php";
-	session_start();
+	nissi_ensure_session();
 
 	$por_pagina = isset($_POST['cantidad']) ? $_POST['cantidad'] : 5;
 	$busqueda = isset($_POST['busqueda']) ? mysqli_escape_string($conection, $_POST['busqueda']) : '';

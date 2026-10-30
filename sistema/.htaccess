@@ -1,0 +1,3 @@
+<IfModule mod_php.c>
+    php_value auto_prepend_file "/var/www/html/sistema/includes/require_auth.php"
+</IfModule>

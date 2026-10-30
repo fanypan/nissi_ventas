@@ -1,6 +1,6 @@
 <?php
 // generarReporteCompras.php
-session_start();
+nissi_ensure_session();
 
 if(empty($_SESSION['active'])) {
     header('location: ../');
