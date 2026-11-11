@@ -220,6 +220,28 @@ if (!empty($_POST)) {
 		exit;
 	}
 
+	if ($_POST['action'] == 'consultarRuc') {
+		require_once __DIR__ . '/includes/sifen_client.php';
+		$ruc = isset($_POST['ruc']) ? (string)$_POST['ruc'] : '';
+		$idcliente = isset($_POST['idcliente']) ? (int)$_POST['idcliente'] : 0;
+		$nombre = isset($_POST['nombre']) ? trim((string)$_POST['nombre']) : '';
+		$usarCache = !empty($_POST['cache']);
+		$vista = sifen_evaluar_ruc($conection, $ruc, $nombre, $usarCache, false);
+		if (!empty($vista['dv_aceptado'])) {
+			sifen_aplicar_ruc_local($conection, $idcliente, $ruc, $vista, '');
+		}
+		echo json_encode($vista, JSON_UNESCAPED_UNICODE);
+		mysqli_close($conection);
+		exit;
+	}
+
+	if ($_POST['action'] == 'consultarCupo') {
+		require_once __DIR__ . '/includes/sifen_client.php';
+		echo json_encode(sifen_cupo($conection), JSON_UNESCAPED_UNICODE);
+		mysqli_close($conection);
+		exit;
+	}
+
 	//Registro Cliente - Ventas
 	if ($_POST['action'] == 'addCliente') {
 		$nit        = $_POST['nit_cliente'];
@@ -572,6 +594,7 @@ if (!empty($_POST)) {
 		$pago_con   = !empty($_POST['pago_con']) ? (float)$_POST['pago_con'] : 0;
 		$vuelto     = !empty($_POST['vuelto']) ? (float)$_POST['vuelto'] : 0;
 		$comprobante = !empty($_POST['comprobante']) ? (int)$_POST['comprobante'] : 1;
+		$plazoDias = !empty($_POST['plazoDias']) ? (int)$_POST['plazoDias'] : 30;
 		$token      = md5($_SESSION['idUser']);
 		$usuario    = $_SESSION['idUser'];
 
@@ -579,6 +602,22 @@ if (!empty($_POST)) {
 		$result = mysqli_num_rows($query);
 
 		if ($result > 0) {
+			if ($comprobante === 2) {
+				require_once __DIR__ . '/includes/sifen_client.php';
+				if (sifen_esta_activo($conection)) {
+					$nombrePantalla = isset($_POST['nombreCliente']) ? trim((string)$_POST['nombreCliente']) : '';
+					$preparado = sifen_preparar_cliente_venta($conection, $codcliente, $nombrePantalla);
+					if (empty($preparado['ok'])) {
+						echo json_encode([
+							'error' => true,
+							'msg' => $preparado['msg'] ?? 'No se pudo consultar el RUC.',
+						], JSON_UNESCAPED_UNICODE);
+						mysqli_close($conection);
+						exit;
+					}
+				}
+			}
+
 			$query_procesar = mysqli_query($conection, "CALL procesar_venta('$usuario',$codcliente,'$token',$tipo_pago,$id_caja,$descuento,$pago_con,$vuelto)");
 			$result_detalle = mysqli_num_rows($query_procesar);
 
@@ -596,17 +635,13 @@ if (!empty($_POST)) {
 						require_once __DIR__ . '/includes/sifen_client.php';
 						$cfgFe = sifen_get_config($conection);
 						if (!empty($cfgFe['activo']) && (int)$cfgFe['activo'] === 1) {
-							$fe = sifen_emitir($conection, (int)$data['noventa']);
-							$kudeHtml = '';
-							if (($fe['status'] ?? '') === 'approved' && !empty($fe['document_id'])) {
-								$kudeHtml = sifen_bajar_kude_html($cfgFe['api_url'], $cfgFe['api_token'], $fe['document_id']);
-							}
+							$fe = sifen_emitir($conection, (int)$data['noventa'], $plazoDias);
 							$data['fe'] = [
 								'status' => $fe['status'] ?? 'error',
 								'cdc' => $fe['cdc'] ?? null,
 								'kude_url' => $fe['kude_url'] ?? '',
-								'kude_html' => $kudeHtml,
 								'error' => $fe['error'] ?? null,
+								'billing' => !empty($fe['billing']),
 							];
 						}
 					} catch (Throwable $e) {

@@ -244,6 +244,7 @@ $(document).ready(function () {
                     $('#tel_cliente').val(data.telefono);
                     $('#email_cliente').val(data.email || '');
                     $('#dir_cliente').val(data.direccion);
+                    consultarRucCampo($('#nit_cliente'), true);
                     //Quitar boton agregar
                     $('.btn_new_cliente').slideUp();
 
@@ -742,7 +743,8 @@ $(document).ready(function () {
         $('.bodyModal').html('<form action="" method="post" name="form_add_product" id="form_add_product" onsubmit="event.preventDefault(); nuevoCliente();">' +
             '<h1><i class="fas fa-user-plus" style="font-size: 45pt;"></i> <br> Registrar cliente</h1>' +
             '<input type="hidden" name="action" value="nuevoCliente" required><br>' +
-            '<input type="text" name="nitCliente" id="nitCliente" value="" placeholder="Ruc o Cedula" required><br>' +
+            '<input type="text" name="nitCliente" id="nitCliente" value="" placeholder="Ruc o Cedula" required>' +
+            '<div class="ruc-estado" style="font-size:12px;margin:4px 0 8px;"></div><br>' +
             '<input type="text" name="nombreCliente" id="nombreCliente" value="" placeholder="Nombre y apellidos" onkeypress="return soloLetras(event)" onpaste="return false" required><br>' +
             '<input type="number" name="telefonoCliente" id="telefonoCliente" value="" placeholder="Teléfono" min="0"><br>' +
             '<input type="email" name="emailCliente" id="emailCliente" value="" placeholder="Correo electrónico"><br>' +
@@ -2005,24 +2007,29 @@ function imprimirUrlSilenciosa(url, titulo) {
 
 function imprimirTrasVenta(info, comprobante) {
     var trabajo;
-    if (info.fe && info.fe.kude_html) {
-        trabajo = agenteImprime({ html: info.fe.kude_html, title: 'KuDE' }).then(function (ok) {
-            if (!ok && info.fe.kude_url) {
-                abrirVentanaComprobante(info.fe.kude_url, 'KuDE');
-            }
-        });
-    } else if (info.fe && info.fe.kude_url) {
-        trabajo = imprimirUrlSilenciosa(info.fe.kude_url, 'KuDE');
+    var kude = info.fe && info.fe.kude_url ? String(info.fe.kude_url).trim() : '';
+    if (kude) {
+        abrirVentanaComprobante(kude, 'KuDE');
+        return Promise.resolve(true);
     } else {
-        if (info.fe && (info.fe.status === 'error' || info.fe.status === 'rejected')) {
-            alert('La venta se registró, pero la factura electrónica no se pudo emitir. ' + (info.fe.error || ''));
-        } else if (info.fe && (info.fe.status === 'queued' || info.fe.status === 'processing' || info.fe.status === 'contingency')) {
-            alert('La venta se registró. La factura electrónica sigue en proceso en SIFEN.');
+        var imprimirLocal = function () {
+            var urlLocal = comprobante == 1
+                ? 'factura/generaTicket.php?cl=' + info.codcliente + '&f=' + info.noventa
+                : 'factura/generaFactura.php?cl=' + info.codcliente + '&f=' + info.noventa;
+            return imprimirUrlSilenciosa(urlLocal, comprobante == 1 ? 'Ticket' : 'Factura');
+        };
+        if (info.fe && info.fe.billing) {
+            trabajo = consultarCupo().done(pintarCupo).always(function () {
+                alert(info.fe.error || 'No se puede facturar.');
+            }).then(imprimirLocal);
+        } else {
+            if (info.fe && (info.fe.status === 'error' || info.fe.status === 'rejected')) {
+                alert('La venta se registró, pero la factura electrónica no se pudo emitir. ' + (info.fe.error || ''));
+            } else if (info.fe && (info.fe.status === 'queued' || info.fe.status === 'processing' || info.fe.status === 'contingency')) {
+                alert('La venta se registró. La factura electrónica sigue en proceso en SIFEN.');
+            }
+            trabajo = imprimirLocal();
         }
-        var urlLocal = comprobante == 1
-            ? 'factura/generaTicket.php?cl=' + info.codcliente + '&f=' + info.noventa
-            : 'factura/generaFactura.php?cl=' + info.codcliente + '&f=' + info.noventa;
-        trabajo = imprimirUrlSilenciosa(urlLocal, comprobante == 1 ? 'Ticket' : 'Factura');
     }
     return Promise.resolve(trabajo);
 }
@@ -2242,6 +2249,7 @@ function agregarCliente(id) {
 
             var data = $.parseJSON(response);
             $('#nit_cliente').val(data.nit);
+            consultarRucCampo($('#nit_cliente'), true);
 
         },
         error: function (error) {
@@ -2438,7 +2446,8 @@ function editarCliente(id) {
                     '<input type="hidden" name="action" value="actualizarCliente">' +
                     '<h1><i class="fas fa-user" style="font-size: 45pt;"></i> <br> Actualizar cliente</h1>' +
                     '<input type="hidden" name="idCliente" value="' + info.idcliente + '">' +
-                    '<input type="text" name="nitCliente" id="nitCliente" value="' + info.nit + '" placeholder="Ruc" required><br>' +
+                    '<input type="text" name="nitCliente" id="nitCliente" value="' + info.nit + '" placeholder="Ruc" required>' +
+                    '<div class="ruc-estado" style="font-size:12px;margin:4px 0 8px;"></div><br>' +
                     '<input type="text" name="nombreCliente" id="nombreCliente" value="' + info.nombre + '" placeholder="Nombre y apellidos" onkeypress="return soloLetras(event)" onpaste="return false" required><br>' +
                     '<input type="number" name="telefonoCliente" id="telefonoCliente" value="' + info.telefono + '" placeholder="Teléfono" min="0"><br>' +
                     '<input type="email" name="emailCliente" id="emailCliente" value="' + (info.email || '') + '" placeholder="Correo electrónico"><br>' +
@@ -2463,6 +2472,9 @@ function editarCliente(id) {
 function actualizarCliente() {
 
     $('.alertAddProduct').html('');
+    if (rucImpideGuardar($('#nitCliente'))) {
+        return false;
+    }
     var nit = $('#nitCliente').val();
     var nombre = $('#nombreCliente').val();
     var busquedaCli = $('#busquedaCliente').val();
@@ -2585,6 +2597,9 @@ function eliminarCliente() {
 function nuevoCliente() {
 
     $('.alertAddProduct').html('');
+    if (rucImpideGuardar($('#nitCliente'))) {
+        return false;
+    }
     var nit = $('#nitCliente').val();
     var nombre = $('#nombreCliente').val();
     if (nit.length < 5) {
@@ -3714,7 +3729,247 @@ function agregarProductoAlDetalle() {
     }
 }
 
+function limpiarRuc(valor) {
+    return $.trim(valor || '').replace(/\s+/g, '');
+}
+
+function cajaEstadoRuc($input) {
+    if ($input.attr('id') === 'nit_cliente') {
+        return $('#ruc_estado');
+    }
+    var $box = $input.siblings('.ruc-estado').first();
+    if (!$box.length) {
+        $box = $('<div class="ruc-estado" style="font-size:12px;margin:4px 0;"></div>');
+        $input.after($box);
+    }
+    return $box;
+}
+
+function campoNombreRuc($input) {
+    var id = $input.attr('id');
+    if (id === 'nit_cliente') return $('#nom_cliente');
+    if (id === 'nit_modal') return $('#nombre_modal');
+    if (id === 'nitCliente') return $('#nombreCliente');
+    return $();
+}
+
+function idClienteRuc($input) {
+    if ($input.attr('id') === 'nit_cliente') {
+        return $('#idcliente').val() || '';
+    }
+    var id = $input.closest('form').find('input[name="idCliente"]').val();
+    return id || '';
+}
+
+function aplicarConsultaRuc($input, res) {
+    var $estado = cajaEstadoRuc($input);
+    var $nombre = campoNombreRuc($input);
+    var color = '#1e7a46';
+    if (!res || res.ok === false || res.bloquea_emision) {
+        color = '#c0392b';
+    } else if (res.advertencia || res.pedir_razon_social) {
+        color = '#b36b00';
+    }
+    $estado.css('color', color).text(res && res.msg ? res.msg : '');
+    if (res && res.dv_aceptado && res.ruc) {
+        $input.val(res.ruc);
+    }
+    var razon = res && res.autocompletar ? $.trim(res.razon_social || '') : '';
+    var razonNormal = razon.toUpperCase().replace(/\./g, '').replace(/\s+/g, ' ');
+    if (razon && razonNormal.indexOf('EMPRESA MOCK') !== 0 && $nombre.length) {
+        $nombre.val(razon);
+    }
+    $input.data('rucVista', res);
+    if ($input.attr('id') === 'nit_cliente') {
+        window.rucVenta = res;
+    }
+}
+
+function consultarRucCampo($input, usarCache) {
+    if (!$input || !$input.length) {
+        return;
+    }
+    var ruc = limpiarRuc($input.val());
+    if (ruc === '') {
+        if ($input.attr('id') === 'nit_cliente') {
+            window.rucVenta = null;
+        }
+        cajaEstadoRuc($input).text('');
+        return;
+    }
+    if (ruc.length > 20) {
+        aplicarConsultaRuc($input, {
+            ok: false,
+            bloquea_emision: true,
+            msg: 'El RUC admite como máximo 20 caracteres.'
+        });
+        return;
+    }
+    var seq = ($input.data('rucSeq') || 0) + 1;
+    $input.data('rucSeq', seq);
+    $input.data('rucPendiente', true);
+    if ($input.attr('id') === 'nit_cliente') {
+        window.rucConsultaPendiente = true;
+    }
+    $.ajax({
+        url: 'ajax.php',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            action: 'consultarRuc',
+            ruc: ruc,
+            idcliente: idClienteRuc($input),
+            nombre: campoNombreRuc($input).val() || '',
+            cache: usarCache ? 1 : 0
+        },
+        success: function (res) {
+            if ($input.data('rucSeq') !== seq) {
+                return;
+            }
+            if (!res || typeof res !== 'object') {
+                res = { ok: false, bloquea_emision: false, msg: 'No se pudo consultar el RUC.' };
+            }
+            aplicarConsultaRuc($input, res);
+        },
+        error: function () {
+            if ($input.data('rucSeq') !== seq) {
+                return;
+            }
+            aplicarConsultaRuc($input, { ok: false, bloquea_emision: false, msg: 'No se pudo consultar el RUC.' });
+        },
+        complete: function () {
+            if ($input.data('rucSeq') !== seq) {
+                return;
+            }
+            $input.data('rucPendiente', false);
+            if ($input.attr('id') === 'nit_cliente') {
+                window.rucConsultaPendiente = false;
+            }
+        }
+    });
+}
+
+function rucImpideGuardar($input) {
+    if (!$input || !$input.length) {
+        return false;
+    }
+    if ($input.data('rucPendiente')) {
+        alert('Esperá un momento: se está consultando el RUC.');
+        return true;
+    }
+    var vista = $input.data('rucVista');
+    if (vista && vista.bloquea_emision) {
+        alert(vista.msg || 'Corregí el RUC antes de guardar.');
+        return true;
+    }
+    return false;
+}
+
+function rucImpideFactura() {
+    if (String($('#comprobante').val()) !== '2') {
+        return false;
+    }
+    if (window.rucConsultaPendiente) {
+        alert('Esperá un momento: se está consultando el RUC.');
+        return true;
+    }
+    if (window.rucVenta && window.rucVenta.bloquea_emision) {
+        alert(window.rucVenta.msg || 'Corregí el RUC antes de emitir.');
+        return true;
+    }
+    return false;
+}
+
+function leerRespuestaVenta(response) {
+    if (response == 'error' || response == null || response === '') {
+        return null;
+    }
+    var info;
+    try {
+        info = (typeof response === 'string') ? JSON.parse(response) : response;
+    } catch (e) {
+        return null;
+    }
+    if (info && info.error) {
+        alert(info.msg || 'No se pudo emitir la factura.');
+        return false;
+    }
+    return info;
+}
+
+function consultarCupo() {
+    return $.ajax({
+        url: 'ajax.php',
+        type: 'POST',
+        dataType: 'json',
+        data: { action: 'consultarCupo' }
+    });
+}
+
+function pintarCupo(cupo) {
+    window.cupoFacturacion = cupo || null;
+    var $box = $('#cupo_facturacion');
+    if (!$box.length) {
+        return;
+    }
+    if (!cupo || cupo.activo === false) {
+        $box.hide().empty();
+        return;
+    }
+    var partes = [];
+    if (cupo.linea) {
+        partes.push(cupo.linea);
+    }
+    if (cupo.aviso) {
+        partes.push(cupo.aviso);
+    }
+    if (!partes.length) {
+        $box.hide().empty();
+        return;
+    }
+    var color = cupo.bloquea ? '#c0392b' : (cupo.aviso ? '#b36b00' : '#1e7a46');
+    $box.css('color', color).empty();
+    partes.forEach(function (texto) {
+        $box.append($('<div>').text(texto));
+    });
+    $box.show();
+}
+
+function cupoListo(continuar, avisar) {
+    if (String($('#comprobante').val()) !== '2') {
+        continuar();
+        return;
+    }
+    consultarCupo().done(function (cupo) {
+        pintarCupo(cupo);
+        if (!cupo || cupo.activo === false) {
+            continuar();
+            return;
+        }
+        if (cupo.bloquea) {
+            alert(cupo.aviso || 'No se puede facturar.');
+            return;
+        }
+        if (avisar && cupo.aviso) {
+            alert(cupo.aviso);
+        }
+        continuar();
+    }).fail(function () {
+        alert('No se pudo consultar el cupo de facturación.');
+    });
+}
+
 function facturar() {
+    var rows = $('#detalle_venta tr').length;
+    if (rucImpideFactura()) {
+        return;
+    }
+    if (rows > 0) {
+        cupoListo(facturarConCupo, false);
+    }
+}
+
+function facturarConCupo() {
     var rows = $('#detalle_venta tr').length;
     if (rows > 0) {
         var action = 'procesarVenta';
@@ -3763,7 +4018,7 @@ function facturar() {
                 return;
             }
 
-            // Procesar venta normal primero
+            cupoListo(function () {
             $.ajax({
                 url: 'ajax.php',
                 type: "POST",
@@ -3774,13 +4029,18 @@ function facturar() {
                     descuento: descuento,
                     pago_con: 0,
                     vuelto: 0,
-                    comprobante: comprobante
+                    comprobante: comprobante,
+                    plazoDias: plazoCreditoDias(),
+                    nombreCliente: $('#nom_cliente').val()
                 },
                 success: function (response) {
                     console.log("Respuesta procesarVenta:", response);
-                    if (response != 'error') {
+                    var info = leerRespuestaVenta(response);
+                    if (info === false) {
+                        return;
+                    }
+                    if (info) {
                         try {
-                            var info = JSON.parse(response);
                             console.log("Venta procesada con éxito, noventa:", info.noventa);
                             var noventa = info.noventa;
 
@@ -3817,6 +4077,7 @@ function facturar() {
                     }
                 }
             });
+            }, true);
             return;
         }
 
@@ -3825,26 +4086,54 @@ function facturar() {
     }
 }
 
-function modalPagoEfectivo() {
-    var totalText = $('#detalle_totales tr:last td:nth-child(2)').text();
-    // Remover puntos de miles y comas decimales para formato Paraguay
-    // Ejemplo: "208.000" -> "208000"
-    var totalLimpio = totalText.replace(/\./g, '').replace(/,/g, '.');
-    var totalVenta = window.totalVentaGlobal ? window.totalVentaGlobal : parseFloat(totalLimpio.replace(/[^0-9.-]+/g, ""));
+function parseMontoGs(valor) {
+    if (typeof valor === 'number' && isFinite(valor)) {
+        return Math.round(valor);
+    }
+    var texto = String(valor || '').replace(/gs\.?/ig, '').replace(/\s/g, '');
+    texto = texto.replace(/\./g, '').replace(/,/g, '');
+    var numero = parseInt(texto, 10);
+    return isNaN(numero) ? 0 : numero;
+}
 
+function formatoGs(valor) {
+    return String(parseMontoGs(valor)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function totalVentaActual() {
+    if (window.totalVentaGlobal !== undefined && window.totalVentaGlobal !== null && window.totalVentaGlobal !== '') {
+        return parseMontoGs(window.totalVentaGlobal);
+    }
+    return parseMontoGs($('#detalle_totales tr:last td.textright').last().text());
+}
+
+function calcularVueltoEfectivo() {
+    var texto = $.trim($('#pago_con').val());
+    var total = parseMontoGs($('#monto_total_pago').val());
+    var pago = parseMontoGs(texto);
+    var vuelto = texto === '' ? 0 : pago - total;
+    var color = vuelto > 0 ? '#27ae60' : (vuelto < 0 ? '#e74c3c' : '#333');
+    $('#vuelto_pago').text(formatoGs(vuelto));
+    $('#vuelto_final').val(vuelto);
+    $('#vuelto_linea').css('color', color);
+    $('.alertAddProduct').html('');
+}
+
+function modalPagoEfectivo() {
+    var totalVenta = totalVentaActual();
 
     $('.bodyModal').html('<form action="" method="post" name="form_pago_efectivo" id="form_pago_efectivo" onsubmit="event.preventDefault(); procesarPagoEfectivo();">' +
-        '<h1><i class="fas fa-money-bill-wave" style="font-size: 45pt;"></i> <br> Pago en Efectivo</h1>' +
+        '<h1><i class="fas fa-money-bill-alt" style="font-size: 45pt;"></i> <br> Pago en Efectivo</h1>' +
         '<div style="width: 100%; text-align: center; margin-top: 10px;">' +
-        '<h2 style="font-size: 18pt;">Total a Pagar: <span id="total_modal">' + totalText + '</span></h2>' +
+        '<h2 style="font-size: 18pt;">Total a Pagar: <span id="total_modal">' + formatoGs(totalVenta) + '</span></h2>' +
         '<input type="hidden" id="monto_total_pago" value="' + totalVenta + '">' +
         '</div>' +
         '<div style="margin-top: 20px;">' +
         '<label style="display: block; font-size: 14pt;">Efectivo Recibido:</label>' +
-        '<input type="number" step="any" name="pago_con" id="pago_con" placeholder="0" style="font-size: 20pt; text-align: center; width: 100%;" min="0" required autoFocus>' +
+        '<input type="text" inputmode="numeric" name="pago_con" id="pago_con" placeholder="0" style="font-size: 20pt; text-align: center; width: 100%;" required autocomplete="off">' +
         '</div>' +
         '<div style="margin-top: 20px;">' +
-        '<h2 style="font-size: 18pt; color: #27ae60;">Su Vuelto: <span id="vuelto_pago">0</span></h2>' +
+        '<h2 id="vuelto_linea" style="font-size: 18pt; color: #333;">Su Vuelto: <span id="vuelto_pago">0</span></h2>' +
         '<input type="hidden" id="vuelto_final" value="0">' +
         '</div>' +
         '<div class="alert alertAddProduct"></div>' +
@@ -3857,25 +4146,13 @@ function modalPagoEfectivo() {
     $('.modal').fadeIn();
     $('#pago_con').focus();
 
-    $('#pago_con').keyup(function () {
-        var pago = parseFloat($(this).val());
-        var total = parseFloat($('#monto_total_pago').val());
-        if (pago >= total) {
-            var vuelto = pago - total;
-            $('#vuelto_pago').html(vuelto.toFixed(0));
-            $('#vuelto_final').val(vuelto.toFixed(0));
-            $('.alertAddProduct').html('');
-        } else {
-            $('#vuelto_pago').html('0');
-            $('#vuelto_final').val(0);
-        }
-    });
+    $('#pago_con').on('input', calcularVueltoEfectivo);
 }
 
 function procesarPagoEfectivo() {
-    var total = parseFloat($('#monto_total_pago').val());
-    var pago = parseFloat($('#pago_con').val());
-    var vuelto = parseFloat($('#vuelto_final').val());
+    var total = parseMontoGs($('#monto_total_pago').val());
+    var pago = parseMontoGs($('#pago_con').val());
+    var vuelto = pago >= total ? pago - total : 0;
     var action = 'procesarVenta';
     var codcliente = $('#idcliente').val();
     var tipoPago = $('#tipo_pago').val();
@@ -3892,10 +4169,14 @@ function procesarPagoEfectivo() {
 }
 
 function ejecutarFacturar(action, codcliente, tipoPago, descuento, comprobante, pago_con, vuelto) {
+    if (rucImpideFactura()) {
+        return;
+    }
     if (descuento == '') {
         descuento = 0;
     }
 
+    cupoListo(function () {
     $.ajax({
         url: 'ajax.php',
         type: "POST",
@@ -3907,13 +4188,18 @@ function ejecutarFacturar(action, codcliente, tipoPago, descuento, comprobante, 
             descuento: descuento,
             pago_con: pago_con,
             vuelto: vuelto,
-            comprobante: comprobante
+            comprobante: comprobante,
+            plazoDias: plazoCreditoDias(),
+            nombreCliente: $('#nom_cliente').val()
         },
 
         success: function (response) {
             console.log(response);
-            if (response != 'error') {
-                var info = JSON.parse(response);
+            var info = leerRespuestaVenta(response);
+            if (info === false) {
+                return;
+            }
+            if (info) {
                 Promise.resolve(imprimirTrasVenta(info, comprobante)).then(function () {
                     location.reload();
                 }, function () {
@@ -3927,6 +4213,7 @@ function ejecutarFacturar(action, codcliente, tipoPago, descuento, comprobante, 
             console.log(error);
         }
     });
+    }, true);
 }
 
 function anularVent() {
@@ -5918,8 +6205,21 @@ function cargarBancos() {
 }
 
 // Mostrar modal de transferencia al seleccionar tipo de pago
+function plazoCreditoDias() {
+    var dias = parseInt($('#plazo_credito').val(), 10);
+    if (!dias || dias < 1) {
+        return 30;
+    }
+    return dias;
+}
+
 $(document).off('change', '#tipo_pago').on('change', '#tipo_pago', function () {
     var tipoPago = $(this).val();
+    if (tipoPago == '3') {
+        $('#plazo_credito').show();
+    } else {
+        $('#plazo_credito').hide();
+    }
 
     if (tipoPago == '2') { // Transferencia
         mostrarModalTransferencia();
@@ -6208,6 +6508,7 @@ function seleccionarCliente(id, nombre, nit, telefono, direccion, email) {
     $('#tel_cliente').val(telefono);
     $('#email_cliente').val(email || '');
     $('#dir_cliente').val(direccion);
+    consultarRucCampo($('#nit_cliente'), true);
 
     // Desactivar campos si ya existe (lógica habitual del sistema)
     $('#nit_cliente').attr('disabled', 'disabled');
@@ -6294,6 +6595,7 @@ function abrirModalNuevoCliente() {
         '<div>' +
         '<label>Ced./RUC (Obligatorio):</label>' +
         '<input type="text" name="nit_modal" id="nit_modal" class="modal-search-input" placeholder="Ruc o Cedula" required>' +
+        '<div class="ruc-estado" style="font-size:12px;margin-top:4px;"></div>' +
         '</div>' +
         '<div>' +
         '<label>Nombre Completo:</label>' +
@@ -6325,6 +6627,9 @@ function abrirModalNuevoCliente() {
 }
 
 function registrarClienteModal() {
+    if (rucImpideGuardar($('#nit_modal'))) {
+        return false;
+    }
     var nit = $('#nit_modal').val();
     var nombre = $('#nombre_modal').val();
     var telefono = $('#telefono_modal').val();
@@ -6356,6 +6661,7 @@ function registrarClienteModal() {
                     $('#idcliente').val(info.codcliente);
                     $('#nom_cliente').val(info.nombre);
                     $('#nit_cliente').val(info.nit);
+                    consultarRucCampo($('#nit_cliente'), true);
                     $('#tel_cliente').val(info.telefono);
                     $('#email_cliente').val(info.email || '');
                     $('#dir_cliente').val(info.direccion);
@@ -7026,3 +7332,20 @@ function nuevoTamanoRapido(selectId = 'cm-tamano') {
         }
     });
 }
+
+$(document).on('blur', '#nit_cliente, #nit_modal, #nitCliente', function () {
+    consultarRucCampo($(this), false);
+});
+
+$(document).on('input', '#nit_cliente, #nit_modal, #nitCliente', function () {
+    var seq = ($(this).data('rucSeq') || 0) + 1;
+    $(this).data('rucSeq', seq);
+    $(this).data('rucPendiente', false);
+    $(this).removeData('rucVista');
+    if (this.id === 'nit_cliente') {
+        window.rucVenta = null;
+        window.rucConsultaPendiente = false;
+    }
+    var $box = this.id === 'nit_cliente' ? $('#ruc_estado') : $(this).siblings('.ruc-estado');
+    $box.text('');
+});

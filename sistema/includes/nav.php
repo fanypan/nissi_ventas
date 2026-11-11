@@ -68,6 +68,27 @@
 				<li><a href="nueva_venta.php"><i class="fas fa-plus"></i> Nueva Venta</a></li>
 			</ul>
 		</li>
+		<?php
+		$feActivaMenu = false;
+		if (isset($conection)) {
+			if (!function_exists('sifen_esta_activo')) {
+				require_once __DIR__ . '/sifen_client.php';
+			}
+			$feActivaMenu = sifen_esta_activo($conection);
+		}
+		if ($feActivaMenu) { ?>
+		<li class="principal">
+			<a href="#"><i class="fas fa-file-alt"></i> Facturación</a>
+			<ul>
+				<li><a href="facturas_electronicas.php"><i class="fas fa-file-alt"></i> Comprobantes enviados</a></li>
+				<li><a href="emitir_otro_comprobante.php"><i class="fas fa-file-alt"></i> Otro comprobante</a></li>
+				<li><a href="eventos_electronicos.php"><i class="fas fa-check-circle"></i> Eventos</a></li>
+				<li><a href="inutilizar_numeracion.php"><i class="fas fa-times-circle"></i> Inutilizar numeración</a></li>
+			</ul>
+		</li>
+		<?php } ?>
+
+
 		<li class="principal">
 			<a href="#"><i class="far fa-money-bill-alt"></i> Caja</a>
 			<ul>
