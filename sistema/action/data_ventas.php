@@ -295,7 +295,7 @@ if ($result > 0) {
 										</div>';
 			// Botón para ver factura
 			$detalleTabla .= '<div>
-        <a href="#" class="btn_view view_factura" title="Ver factura" onclick="event.preventDefault(); verFactura(' . $data['codcliente'] . ',' . $data['noventa'] . ');"><i class="fas fa-file-invoice"></i></a>
+        <a href="#" class="btn_view view_factura" title="Ver factura" onclick="event.preventDefault(); verFactura(' . $data['codcliente'] . ',' . $data['noventa'] . ');"><i class="fas fa-file-alt"></i></a>
     </div>';
 
 

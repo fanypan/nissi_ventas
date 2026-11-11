@@ -93,7 +93,7 @@ $tokenConfigurado = !empty($fe['api_token']);
 						<div class="alertFormFE" style="display: none; text-align: center;"></div>
 						<div>
 							<button type="submit" class="btn_save"><i class="far fa-save fa-lg"></i> Guardar facturación</button>
-							<button type="button" class="btn_save" id="btnProbarFE"><i class="fas fa-plug"></i> Probar conexión</button>
+							<button type="button" class="btn_save" id="btnProbarFE"><i class="fas fa-check-circle"></i> Probar conexión</button>
 						</div>
 					</form>
 				</div>

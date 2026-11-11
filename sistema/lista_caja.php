@@ -178,7 +178,7 @@ $result = mysqli_num_rows($query);
 function editarInicioCaja(idCaja, montoActual) {
 	$('.bodyModal').html(
 		'<form id="form_edit_inicio_caja" style="width: 400px; padding: 20px; background: #fff; border-radius: 10px;">' +
-		'<h1><i class="fas fa-cash-register" style="font-size: 35pt;"></i><br>Editar Monto Inicial</h1><br>' +
+		'<h1><i class="far fa-money-bill-alt" style="font-size: 35pt;"></i><br>Editar Monto Inicial</h1><br>' +
 		'<input type="hidden" name="action" value="editarInicioCaja">' +
 		'<input type="hidden" name="id_caja" value="' + idCaja + '">' +
 		'<label>Nuevo Monto Inicial:</label>' +

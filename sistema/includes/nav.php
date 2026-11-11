@@ -68,18 +68,16 @@
 				<li><a href="nueva_venta.php"><i class="fas fa-plus"></i> Nueva Venta</a></li>
 			</ul>
 		</li>
-
-
 		<li class="principal">
-			<a href="#"><i class="fas fa-cash-register"></i> Caja</a>
+			<a href="#"><i class="far fa-money-bill-alt"></i> Caja</a>
 			<ul>
 				<li><a href="lista_caja.php"><i class="far fa-money-bill-alt"></i> Apertura y Cierre</a></li>
 				<li><a href="lista_egresos.php"><i class="fas fa-dollar-sign"></i> Egresos</a></li>
 				<?php if ($_SESSION['rol'] == 1 || $_SESSION['rol'] == 2) { ?>
 					<?php if ($_SESSION['rol'] == 1) { ?>
-						<li><a href="arqueo_caja.php"><i class="fas fa-cash-register"></i> Arqueo de Caja</a></li>
-						<li><a href="arqueo_reporte.php"><i class="fas fa-history"></i> Histórico de Arqueos</a></li>
-						<li><a href="reporte_egresos.php"><i class="fas fa-file-invoice-dollar"></i> Reporte de Egresos</a></li>
+						<li><a href="arqueo_caja.php"><i class="fas fa-balance-scale"></i> Arqueo de Caja</a></li>
+						<li><a href="arqueo_reporte.php"><i class="fas fa-clipboard-list"></i> Histórico de Arqueos</a></li>
+						<li><a href="reporte_egresos.php"><i class="fas fa-file-alt"></i> Reporte de Egresos</a></li>
 						<li><a href="reporte_consolidado.php"><i class="fas fa-chart-line"></i> Reporte Consolidado</a></li>
 					<?php  } ?>
 				<?php  } ?>
@@ -92,7 +90,7 @@
 				<ul>
 					<li><a href="configuracion.php"><i class="fas fa-file-alt"></i> Datos Empresa</a></li>
 					<?php if ($_SESSION['rol'] == 1) { ?>
-						<li><a href="configuracion_factura_electronica.php"><i class="fas fa-file-invoice"></i> Configuración factura electrónica</a></li>
+						<li><a href="configuracion_factura_electronica.php"><i class="fas fa-file-alt"></i> Configuración factura electrónica</a></li>
 						<li><a href="uso_insumos.php" style="background: #34495e; color: #fff;"><i class="fas fa-utensils"></i> Consumo de Insumos</a></li>
 					<?php } ?>
 				</ul>
