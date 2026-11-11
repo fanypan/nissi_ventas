@@ -1,6 +1,6 @@
 <?php
 include "../conexion.php";
-session_start();
+ensure_session();
 
 $token = md5('1'); // Sample user token
 $codproducto = 1325; // Sample product ID from earlier dump

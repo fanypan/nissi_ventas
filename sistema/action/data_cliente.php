@@ -1,7 +1,7 @@
 <?php 
 
 	include "../../conexion.php";
-	session_start();
+	ensure_session();
 
 //print_r($_POST);exit;
 	 //Extraer datos del detalle_temp
@@ -15,7 +15,8 @@
 					$sql_registe = mysqli_query($conection,"SELECT COUNT(*) as total_registro FROM cliente 
 																WHERE (
 																		nit LIKE '%$busqueda%' OR 
-																		nombre LIKE '%$busqueda%') 
+																		nombre LIKE '%$busqueda%' OR
+																		email LIKE '%$busqueda%') 
 																AND status = 1 ");
 			$result_register = mysqli_fetch_array($sql_registe);
 			$total_registro = $result_register['total_registro'];
@@ -35,7 +36,8 @@
 				$query = mysqli_query($conection,"SELECT * FROM cliente WHERE
 										(
 											nit LIKE '%$busqueda%' OR 
-											nombre LIKE '%$busqueda%'
+											nombre LIKE '%$busqueda%' OR
+											email LIKE '%$busqueda%'
 											 ) 
 											AND
 										status = 1 ORDER BY idcliente DESC LIMIT $desde,$por_pagina ");
@@ -52,6 +54,7 @@
 										<th>Ced.</th>
 										<th>Nombre</th>
 										<th>Teléfono</th>
+										<th>Correo</th>
 										<th>Dirección</th>';
 					if ($_SESSION['rol'] == 1 || $_SESSION['rol'] == 2) {
 						$detalleTabla.='<th>Acciones</th>';
@@ -66,6 +69,7 @@
 						                <td>'.$data['nit'].'</td>
 						                <td colspan="">'.$data['nombre'].'</td>
 						                <td class="">'.$data['telefono'].'</td>
+						                <td class="">'.$data['email'].'</td>
 						                <td class="">'.$data['direccion'].'</td>';
 						     if ($_SESSION['rol'] == 1 || $_SESSION['rol'] == 2) {
 					  $detalleTabla .= '<td class="">

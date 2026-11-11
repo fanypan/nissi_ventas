@@ -1,5 +1,5 @@
 <?php
-session_start();
+ensure_session();
 if (empty($_SESSION['active'])) {
     header('location: ../');
 }

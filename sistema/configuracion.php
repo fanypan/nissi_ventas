@@ -1,6 +1,6 @@
 <?php 
 
-session_start();
+ensure_session();
 
 ?>
 <!DOCTYPE html>
@@ -166,7 +166,6 @@ session_start();
 
 
 		<?php include "includes/footer.php"?>
-		
 
 </body>
 </html>

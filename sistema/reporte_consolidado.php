@@ -1,5 +1,5 @@
 <?php
-session_start();
+ensure_session();
 if ($_SESSION['rol'] != 1 && $_SESSION['rol'] != 2) {
     header("location: ./");
 }
@@ -254,7 +254,7 @@ $ganancia_neta = $ganancia_bruta - $egresos;
                 <div class="card-stat card-ingresos">
                     <h3>Ingresos Totales (Ventas)</h3>
                     <div class="value"><?php echo $moneda . ' ' . number_format($ingresos, 2); ?></div>
-                    <i class="fas fa-cash-register icon"></i>
+                    <i class="far fa-money-bill-alt icon"></i>
                 </div>
                 <div class="card-stat card-costos">
                     <h3>Costo de Ventas</h3>

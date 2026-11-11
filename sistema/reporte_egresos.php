@@ -1,5 +1,5 @@
 <?php
-session_start();
+ensure_session();
 if ($_SESSION['rol'] != 1 && $_SESSION['rol'] != 2) {
     header("location: ./");
 }
@@ -116,7 +116,7 @@ $moneda = $config['moneda'];
     <?php include "includes/header.php"; ?>
     <section id="container">
         <div class="report_container">
-            <h1><i class="fas fa-file-invoice-dollar"></i> Reporte de Egresos</h1>
+            <h1><i class="fas fa-file-alt"></i> Reporte de Egresos</h1>
             
             <form action="" method="post" class="filter_box">
                 <div>

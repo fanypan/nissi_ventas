@@ -1,5 +1,5 @@
 <?php 
- 	session_start(); 
+ 	ensure_session(); 
 
 	header("Content-Type: application/vnd.ms-excel; charset=utf-8");
 	header("Content-Disposition: attachment; filename= productos_sin_existencia.xls");

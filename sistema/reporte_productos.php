@@ -1,5 +1,5 @@
 <?php 
- 	session_start(); 
+ 	ensure_session(); 
 
 	header("Content-Type: Application/xls");
 	header("Content-Disposition: attachment; filename= lista de productos.xls");

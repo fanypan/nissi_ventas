@@ -1,6 +1,6 @@
 <?php
 include "../conexion.php";
-session_start();
+ensure_session();
 $_SESSION['idUser'] = 1;
 $_POST = [
     'action' => 'addProductoDetalleCompra',

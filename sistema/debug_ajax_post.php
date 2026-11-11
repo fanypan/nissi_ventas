@@ -1,6 +1,6 @@
 <?php
 // Simular sesión
-session_start();
+ensure_session();
 $_SESSION['idUser'] = 1;
 
 // Simular POST

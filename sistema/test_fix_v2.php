@@ -1,6 +1,6 @@
 <?php
 include "../conexion.php";
-session_start();
+ensure_session();
 
 // Mock session
 $_SESSION['idUser'] = 1;

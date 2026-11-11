@@ -1,6 +1,6 @@
 <?php 
 
-	session_start();
+	ensure_session();
 	session_destroy();
 
 	header('location: ../');

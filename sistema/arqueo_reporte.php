@@ -1,5 +1,5 @@
 <?php
-session_start();
+ensure_session();
 if ($_SESSION['rol'] != 1) {
     header("location: ./");
 }
@@ -141,7 +141,7 @@ $moneda = $config['moneda'];
     <?php include "includes/header.php"; ?>
     <section id="container">
         <div class="report_container">
-            <h1><i class="fas fa-history"></i> Reporte Histórico de Arqueos</h1>
+            <h1><i class="fas fa-clipboard-list"></i> Reporte Histórico de Arqueos</h1>
             
             <form action="" method="post" class="filter_box">
                 <div>

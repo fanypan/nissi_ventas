@@ -1,5 +1,5 @@
 <?php
-session_start();
+ensure_session();
 // Diagnóstico y Verificación General del Sistema de Código de Barras
 ?>
 <!DOCTYPE html>

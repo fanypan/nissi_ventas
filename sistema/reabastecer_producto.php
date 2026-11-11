@@ -1,5 +1,5 @@
 <?php 
-	session_start();
+	ensure_session();
 	include "../conexion.php";
 ?>
 <!DOCTYPE html>

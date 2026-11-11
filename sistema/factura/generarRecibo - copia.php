@@ -4,7 +4,7 @@
 	//exit;
 	//echo base64_encode('2');
 	//exit;
-	session_start();
+	ensure_session();
 	if(empty($_SESSION['active']))
 	{
 		header('location: ../');

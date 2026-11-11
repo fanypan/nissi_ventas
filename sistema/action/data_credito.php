@@ -1,7 +1,7 @@
 <?php 
 
 	include "../../conexion.php";
-	session_start();
+	ensure_session();
 	//print_r($_POST);exit;
 	 //Extraer datos del detalle_temp
 		$query_conf = mysqli_query($conection,"SELECT moneda FROM configuracion");

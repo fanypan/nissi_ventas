@@ -1,5 +1,5 @@
 <?php
-session_start();
+ensure_session();
 if ($_SESSION['rol'] != 1) {
     header("location: ./");
 }
@@ -99,7 +99,7 @@ $moneda = $config['moneda'];
     <?php include "includes/header.php"; ?>
     <section id="container">
         <div class="arqueo_container">
-            <h1><i class="fas fa-cash-register"></i> Arqueo de Caja</h1>
+            <h1><i class="fas fa-balance-scale"></i> Arqueo de Caja</h1>
             <p><strong>Fecha de apertura:</strong> <?= $caja_abierta['fecha']; ?></p>
             <p><strong>Administrador:</strong> <?= $_SESSION['nombre']; ?></p>
             <hr>

@@ -1,5 +1,5 @@
 <?php
-session_start();
+ensure_session();
 include "../conexion.php";
 ?>
 <!DOCTYPE html>
@@ -67,7 +67,9 @@ include "../conexion.php";
 									<a href="#" class="btn_new" id="nuevo_cliente_modal" onclick="event.preventDefault(); abrirModalNuevoCliente();" style="margin-left: 5px; padding: 5px 10px; background: #286581;" title="Nuevo Cliente"><i class="fas fa-plus"></i></a>
 								</div>
 								<input type="text" name="nit_cliente" id="nit_cliente" disabled placeholder="Ruc o Cedula">
+								<div id="ruc_estado" style="font-size:12px; margin:4px 0 6px; min-height:16px;"></div>
 								<input type="number" name="tel_cliente" id="tel_cliente" disabled placeholder="Teléfono" min="0">
+								<input type="email" name="email_cliente" id="email_cliente" disabled placeholder="Correo electrónico">
 								<input type="text" name="dir_cliente" id="dir_cliente" disabled placeholder="Dirección">
 							</td>
 							<td>
@@ -82,11 +84,13 @@ include "../conexion.php";
 									<option value="4">QR</option>
 									<option value="5">Tarjeta</option>
 								</select>
+								<input type="number" name="plazo_credito" id="plazo_credito" value="30" min="1" placeholder="Plazo del crédito (días)" title="Plazo del crédito en días" style="display:none; margin-top: 5px;">
 								<div style="display: flex; align-items: center; margin-top: 5px;">
 								<input type="number" name="descuneto_venta" id="descuneto_venta" value="" placeholder="Descuento (Monto)" style="flex: 1;" min="0">
 								<span style="font-weight: bold; margin-left: 5px; color: #05817d;">Gs</span>
 							</div>
 								<input type="" name="" value="Vendedor: <?php echo $_SESSION['nombre']; ?>" disabled>
+								<div id="cupo_facturacion" style="font-size:13px; margin-top:6px; display:none;"></div>
 							</td>
 						</tr>
 					</table>
@@ -139,6 +143,9 @@ include "../conexion.php";
 			var descuento = $('#descuneto_venta').val();
 			var usuarioid = '<?php echo $_SESSION['idUser']; ?>';
 			serchForDetalle(usuarioid, 0);
+			if (typeof consultarCupo === 'function') {
+				consultarCupo().done(pintarCupo);
+			}
 
 			var items = <?= json_encode($array); ?>;
 			$('#nom_cliente').autocomplete({

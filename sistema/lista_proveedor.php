@@ -1,5 +1,5 @@
  <?php
-session_start(); 
+ensure_session(); 
 if ($_SESSION['rol'] != 1 and $_SESSION['rol'] !=2) 
 	{
 		header("location: ./");

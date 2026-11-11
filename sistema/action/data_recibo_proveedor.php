@@ -1,7 +1,7 @@
 <?php 
 
 	include "../../conexion.php";
-	session_start();
+	ensure_session();
 	
 	 //Extraer datos del detalle_temp
 	//print_r($_POST);
