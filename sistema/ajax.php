@@ -226,7 +226,14 @@ if (!empty($_POST)) {
 		$nombre     = $_POST['nom_cliente'];
 		$telefono   = $_POST['tel_cliente'];
 		$direccion  = $_POST['dir_cliente'];
+		$email      = isset($_POST['email_cliente']) ? trim($_POST['email_cliente']) : '';
 		$usuario_id = $_SESSION['idUser'];
+
+		if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+			echo 'error';
+			exit;
+		}
+		$emailSql = mysqli_real_escape_string($conection, $email);
 
 		$query = mysqli_query($conection, "SELECT * FROM cliente WHERE nit = '$nit' ");
 		$result = mysqli_fetch_array($query);
@@ -234,8 +241,8 @@ if (!empty($_POST)) {
 		if ($result > 0) {
 			$msg = 'El número de CI ya existe.';
 		} else {
-			$query_insert = mysqli_query($conection, "INSERT INTO cliente(nit,nombre,telefono,direccion,usuario_id)
-																	VALUES('$nit','$nombre','$telefono','$direccion','$usuario_id')");
+			$query_insert = mysqli_query($conection, "INSERT INTO cliente(nit,nombre,telefono,direccion,email,usuario_id)
+																	VALUES('$nit','$nombre','$telefono','$direccion','$emailSql','$usuario_id')");
 		}
 		mysqli_close($conection);
 		if ($query_insert) {
@@ -813,7 +820,15 @@ if (!empty($_POST)) {
 		$nombre    = $_POST['nombre'];
 		$telefono  = $_POST['telefono'];
 		$direccion = $_POST['direccion'];
+		$email     = isset($_POST['email']) ? trim($_POST['email']) : '';
 		$usuario_id = $_SESSION['idUser'];
+
+		if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+			echo json_encode(['codcliente' => 0, 'msg' => 'El correo electrónico no es válido.']);
+			mysqli_close($conection);
+			exit;
+		}
+		$emailSql = mysqli_real_escape_string($conection, $email);
 
 		$query_existe = mysqli_query($conection, "SELECT * FROM cliente WHERE nit = '$nit' AND status = 1");
 		$result_existe = mysqli_num_rows($query_existe);
@@ -821,8 +836,8 @@ if (!empty($_POST)) {
 		if ($result_existe > 0) {
 			echo json_encode(['codcliente' => 0, 'msg' => 'El cliente ya existe con ese RUC/Cédula']);
 		} else {
-			$query_insert = mysqli_query($conection, "INSERT INTO cliente(nit, nombre, telefono, direccion, usuario_id) 
-													VALUES('$nit', '$nombre', '$telefono', '$direccion', $usuario_id)");
+			$query_insert = mysqli_query($conection, "INSERT INTO cliente(nit, nombre, telefono, direccion, email, usuario_id) 
+													VALUES('$nit', '$nombre', '$telefono', '$direccion', '$emailSql', $usuario_id)");
 			if ($query_insert) {
 				$id_nuevo = mysqli_insert_id($conection);
 				echo json_encode([
@@ -830,7 +845,8 @@ if (!empty($_POST)) {
 					'nit'        => $nit,
 					'nombre'     => $nombre,
 					'telefono'   => $telefono,
-					'direccion'  => $direccion
+					'direccion'  => $direccion,
+					'email'      => $email
 				], JSON_UNESCAPED_UNICODE);
 			} else {
 				echo json_encode(['codcliente' => 0, 'msg' => 'Error al guardar el cliente']);
@@ -1258,6 +1274,14 @@ if (!empty($_POST)) {
 			$strNombre 	= $_POST['nombreCliente'];
 			$intTel 	= isset($_POST['telefonoCliente']) ? $_POST['telefonoCliente'] : '';
 			$strDir 	= isset($_POST['direccionCliente']) ? $_POST['direccionCliente'] : '';
+			$email 		= isset($_POST['emailCliente']) ? trim($_POST['emailCliente']) : '';
+
+			if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+				$arrData = array('cod' => '1', 'msg' => 'El correo electrónico no es válido.');
+				echo json_encode($arrData, JSON_UNESCAPED_UNICODE);
+				exit;
+			}
+			$emailSql = mysqli_real_escape_string($conection, $email);
 
 			$query = mysqli_query($conection, "SELECT * FROM cliente WHERE (nit = '$intNit' AND idcliente != $idCliente) ");
 			$result = mysqli_fetch_array($query);
@@ -1270,7 +1294,8 @@ if (!empty($_POST)) {
 			$queryUpd = mysqli_query($conection, " UPDATE cliente SET  nit = '$intNit',
 	   		     														nombre = '$strNombre',
 	   		     														telefono = $intTel,
-	   		     														direccion = '$strDir'
+	   		     														direccion = '$strDir',
+	   		     														email = '$emailSql'
 	   		     														WHERE idcliente = $idCliente");
 			mysqli_close($conection);
 
@@ -1318,7 +1343,15 @@ if (!empty($_POST)) {
 			$nombre 	= $_POST['nombreCliente'];
 			$telefono 	= isset($_POST['telefonoCliente']) ? $_POST['telefonoCliente'] : '';
 			$direccion 	= isset($_POST['direccionCliente']) ? $_POST['direccionCliente'] : '';
+			$email 		= isset($_POST['emailCliente']) ? trim($_POST['emailCliente']) : '';
 			$user 		= $_SESSION['idUser'];
+
+			if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+				$arrData = array('cod' => '1', 'msg' => 'El correo electrónico no es válido.');
+				echo json_encode($arrData, JSON_UNESCAPED_UNICODE);
+				exit;
+			}
+			$emailSql = mysqli_real_escape_string($conection, $email);
 			$result 	= 0;
 
 			$query = mysqli_query($conection, "SELECT * FROM cliente WHERE nit = '$nit' ");
@@ -1329,8 +1362,8 @@ if (!empty($_POST)) {
 			$msg = 'El número de CI ya existe.';
 		} else {
 
-			$query_insert = mysqli_query($conection, "INSERT INTO cliente(nit,nombre,telefono,direccion,usuario_id)
-					                                           VALUES('$nit','$nombre',$telefono,'$direccion',$user)");
+			$query_insert = mysqli_query($conection, "INSERT INTO cliente(nit,nombre,telefono,direccion,email,usuario_id)
+					                                           VALUES('$nit','$nombre',$telefono,'$direccion','$emailSql',$user)");
 
 			mysqli_close($conection);
 			if ($query_insert) {

@@ -40,7 +40,8 @@
 										addslashes($data['nombre']) . '\', \'' . 
 										$data['nit'] . '\', \'' . 
 										$data['telefono'] . '\', \'' . 
-										addslashes($data['direccion']) . '\')"><i class="fas fa-check"></i> Seleccionar</button>
+										addslashes($data['direccion']) . '\', \'' . 
+										addslashes((string)($data['email'] ?? '')) . '\')"><i class="fas fa-check"></i> Seleccionar</button>
 								</td>
 							</tr>';
 		}

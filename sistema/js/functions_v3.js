@@ -164,6 +164,7 @@ $(document).ready(function () {
         e.preventDefault();
         $('#nit_cliente').removeAttr('disabled');
         $('#tel_cliente').removeAttr('disabled');
+        $('#email_cliente').removeAttr('disabled');
         $('#dir_cliente').removeAttr('disabled');
 
         $('#div_registro_cliente').slideDown();
@@ -232,6 +233,7 @@ $(document).ready(function () {
                     $('#idcliente').val('');
                     $('#nit_cliente').val('');
                     $('#tel_cliente').val('');
+                    $('#email_cliente').val('');
                     $('#dir_cliente').val('');
                     //Mostrar boton agregar
                     $('.btn_new_cliente').slideDown();
@@ -240,6 +242,7 @@ $(document).ready(function () {
                     $('#idcliente').val(data.idcliente);
                     $('#nit_cliente').val(data.nit);
                     $('#tel_cliente').val(data.telefono);
+                    $('#email_cliente').val(data.email || '');
                     $('#dir_cliente').val(data.direccion);
                     //Quitar boton agregar
                     $('.btn_new_cliente').slideUp();
@@ -247,6 +250,7 @@ $(document).ready(function () {
                     //Bloque campos
                     $('#nit_cliente').attr('disabled', 'disabled');
                     $('#tel_cliente').attr('disabled', 'disabled');
+                    $('#email_cliente').attr('disabled', 'disabled');
                     $('#dir_cliente').attr('disabled', 'disabled');
 
                     //Ocultar boton guardar
@@ -287,6 +291,7 @@ $(document).ready(function () {
                     //Bloque campos
                     $('#nit_cliente').attr('disabled', 'disabled');
                     $('#tel_cliente').attr('disabled', 'disabled');
+                    $('#email_cliente').attr('disabled', 'disabled');
                     $('#dir_cliente').attr('disabled', 'disabled');
 
                     //Ocultar boton gagregar
@@ -740,6 +745,7 @@ $(document).ready(function () {
             '<input type="text" name="nitCliente" id="nitCliente" value="" placeholder="Ruc o Cedula" required><br>' +
             '<input type="text" name="nombreCliente" id="nombreCliente" value="" placeholder="Nombre y apellidos" onkeypress="return soloLetras(event)" onpaste="return false" required><br>' +
             '<input type="number" name="telefonoCliente" id="telefonoCliente" value="" placeholder="Teléfono" min="0"><br>' +
+            '<input type="email" name="emailCliente" id="emailCliente" value="" placeholder="Correo electrónico"><br>' +
             '<input type="text" name="direccionCliente" id="direccionCliente" value="" placeholder="Dirección"><br>' +
             '<div class="alert alertAddProduct"></div>' +
             '<a href="#" class="btn_ok closeModal" onclick="coloseModal(); "><i class="fas fa-ban"></i> Cerrar</a>' +
@@ -2435,6 +2441,7 @@ function editarCliente(id) {
                     '<input type="text" name="nitCliente" id="nitCliente" value="' + info.nit + '" placeholder="Ruc" required><br>' +
                     '<input type="text" name="nombreCliente" id="nombreCliente" value="' + info.nombre + '" placeholder="Nombre y apellidos" onkeypress="return soloLetras(event)" onpaste="return false" required><br>' +
                     '<input type="number" name="telefonoCliente" id="telefonoCliente" value="' + info.telefono + '" placeholder="Teléfono" min="0"><br>' +
+                    '<input type="email" name="emailCliente" id="emailCliente" value="' + (info.email || '') + '" placeholder="Correo electrónico"><br>' +
                     '<input type="text" name="direccionCliente" id="direccionCliente" value="' + info.direccion + '" placeholder="Dirección"><br>' +
                     '<div class="alert alertAddProduct"></div>' +
                     '<a href="#" class="btn_ok closeModal" onclick="coloseModal(); "><i class="fas fa-ban"></i> Cerrar</a>' +
@@ -6194,16 +6201,18 @@ function listaClienteModal(busqueda, pagina) {
     });
 }
 
-function seleccionarCliente(id, nombre, nit, telefono, direccion) {
+function seleccionarCliente(id, nombre, nit, telefono, direccion, email) {
     $('#idcliente').val(id);
     $('#nom_cliente').val(nombre);
     $('#nit_cliente').val(nit);
     $('#tel_cliente').val(telefono);
+    $('#email_cliente').val(email || '');
     $('#dir_cliente').val(direccion);
 
     // Desactivar campos si ya existe (lógica habitual del sistema)
     $('#nit_cliente').attr('disabled', 'disabled');
     $('#tel_cliente').attr('disabled', 'disabled');
+    $('#email_cliente').attr('disabled', 'disabled');
     $('#dir_cliente').attr('disabled', 'disabled');
     $('.btn_new_cliente').slideUp();
 
@@ -6295,6 +6304,10 @@ function abrirModalNuevoCliente() {
         '<input type="number" name="telefono_modal" id="telefono_modal" class="modal-search-input" placeholder="Teléfono" min="0" required>' +
         '</div>' +
         '<div>' +
+        '<label>Correo electrónico:</label>' +
+        '<input type="email" name="email_modal" id="email_modal" class="modal-search-input" placeholder="Correo para enviar la factura">' +
+        '</div>' +
+        '<div>' +
         '<label>Dirección:</label>' +
         '<input type="text" name="direccion_modal" id="direccion_modal" class="modal-search-input" placeholder="Dirección" required>' +
         '</div>' +
@@ -6316,6 +6329,7 @@ function registrarClienteModal() {
     var nombre = $('#nombre_modal').val();
     var telefono = $('#telefono_modal').val();
     var direccion = $('#direccion_modal').val();
+    var email = $('#email_modal').val();
 
     if (nit == '' || nombre == '') {
         $('.alertAddProduct').html('<p style="color:red;">El RUC y Nombre son obligatorios.</p>');
@@ -6331,7 +6345,8 @@ function registrarClienteModal() {
             nit: nit,
             nombre: nombre,
             telefono: telefono,
-            direccion: direccion
+            direccion: direccion,
+            email: email
         },
         success: function (response) {
             if (response != 'error') {
@@ -6342,11 +6357,13 @@ function registrarClienteModal() {
                     $('#nom_cliente').val(info.nombre);
                     $('#nit_cliente').val(info.nit);
                     $('#tel_cliente').val(info.telefono);
+                    $('#email_cliente').val(info.email || '');
                     $('#dir_cliente').val(info.direccion);
 
                     // Desactivar campos
                     $('#nit_cliente').attr('disabled', 'disabled');
                     $('#tel_cliente').attr('disabled', 'disabled');
+                    $('#email_cliente').attr('disabled', 'disabled');
                     $('#dir_cliente').attr('disabled', 'disabled');
                     $('.btn_new_cliente').slideUp();
 

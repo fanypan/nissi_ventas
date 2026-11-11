@@ -123,6 +123,11 @@ if (!function_exists('ensureFacturacionTables')) {
                 @mysqli_query($conection, $sql);
             }
         }
+
+        $emailCliente = mysqli_query($conection, "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cliente' AND COLUMN_NAME = 'email'");
+        if ($emailCliente && mysqli_num_rows($emailCliente) == 0) {
+            @mysqli_query($conection, "ALTER TABLE `cliente` ADD COLUMN `email` VARCHAR(120) NULL DEFAULT NULL AFTER `direccion`");
+        }
     }
 }
 

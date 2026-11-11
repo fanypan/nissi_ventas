@@ -68,6 +68,7 @@ include "../conexion.php";
 								</div>
 								<input type="text" name="nit_cliente" id="nit_cliente" disabled placeholder="Ruc o Cedula">
 								<input type="number" name="tel_cliente" id="tel_cliente" disabled placeholder="Teléfono" min="0">
+								<input type="email" name="email_cliente" id="email_cliente" disabled placeholder="Correo electrónico">
 								<input type="text" name="dir_cliente" id="dir_cliente" disabled placeholder="Dirección">
 							</td>
 							<td>
