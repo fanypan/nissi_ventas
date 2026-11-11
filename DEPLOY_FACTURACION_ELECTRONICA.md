@@ -6,7 +6,7 @@ El código vive en el repositorio `nissi_ventas` (`https://github.com/fanypan/ni
 
 ## Qué hace
 
-Cuando el vendedor elige **Factura** (no Ticket) y la facturación electrónica está activa, PHP llama a la pasarela SIFEN, espera el KuDE y abre ese PDF. El token y la URL no salen al navegador: la llamada la hace el servidor.
+Cuando el vendedor elige **Factura** (no Ticket) y la facturación electrónica está activa, PHP llama a la pasarela SIFEN. Si la respuesta ya trae el KuDE firmado, la caja lo abre en una ventana aunque el estado siga en proceso. Ese enlace dura unos minutos, no lleva el token y no se guarda. El token queda en el servidor. Si más tarde hace falta el archivo, se baja de nuevo con el token.
 
 Si SIFEN falla, la venta igual queda guardada y se imprime el comprobante interno.
 
@@ -75,6 +75,14 @@ CREATE TABLE IF NOT EXISTS `factura_electronica` (
 ```
 
 No se agregan columnas a `venta` ni a `producto`. El IVA sale de `iva_por_defecto` (10% al empezar).
+
+El cliente gana una columna para el correo. Se crea sola al abrir el sistema. Si preferís hacerlo a mano:
+
+```sql
+ALTER TABLE `cliente` ADD COLUMN `email` VARCHAR(120) NULL DEFAULT NULL AFTER `direccion`;
+```
+
+Ese correo se manda como `cliente.email`. Si está cargado y la pasarela tiene servidor de correo, ella envía el PDF. El plazo de una factura a crédito sale de la venta (por defecto 30 días) y va en `condicion.credito.plazo`. La forma de pago de una venta al contado sale del tipo elegido en caja. Departamento, distrito y ciudad del receptor los completa la pasarela.
 
 ## 3. Qué cargar a mano (no va en git)
 

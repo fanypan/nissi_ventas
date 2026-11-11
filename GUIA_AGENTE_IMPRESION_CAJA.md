@@ -1,6 +1,6 @@
 # Agente de impresión en la caja (Nissi)
 
-Nissi no abre el diálogo de impresión del navegador si en la PC de la caja está corriendo el agente local. El navegador le manda el ticket o el KuDE a `https://127.0.0.1:4171` y el agente lo imprime con la impresora de Windows.
+Nissi no abre el diálogo de impresión del navegador para el ticket si en la PC de la caja está corriendo el agente local. El navegador le manda el ticket a `https://127.0.0.1:4171` y el agente lo imprime con la impresora de Windows.
 
 El programa está en `nissi_ventas/agente_impresion`. Hay que instalarlo en cada caja, no en el servidor.
 
@@ -11,7 +11,7 @@ Si el agente está apagado, la venta igual se guarda y Nissi abre el comprobante
 | Comprobante en la venta | Qué sale |
 |---|---|
 | Ticket | PDF angosto generado por Nissi |
-| Factura electrónica | El HTML del KuDE que devuelve la API, sin armar un PDF en Nissi. Si el cliente está en ticket, ese HTML ya mide 80 mm. Si está en A4, es hoja. |
+| Factura electrónica | El KuDE firmado que devuelve la pasarela. Nissi lo abre en una ventana en cuanto llega el enlace, aunque SIFEN siga en proceso. El enlace dura 5 minutos y no se guarda. |
 
 Una PC, una impresora. El rollo térmico y la hoja A4 no pueden ser la misma impresora. La caja que factura en ticket tiene que tener la ticketera como predeterminada. La que factura en A4, la impresora de hoja.
 
@@ -135,7 +135,7 @@ Nissi ya llama al puerto `4171`. No hay una pantalla en el sistema para cambiar 
 
 | Qué pasa | Qué revisar |
 |---|---|
-| Se abre el PDF en el navegador | El agente no respondió. `curl http://127.0.0.1:4171/status` en esa misma PC. |
+| Se abre el ticket en el navegador | El agente no respondió. `curl http://127.0.0.1:4171/status` en esa misma PC. La factura electrónica abre el KuDE en una ventana aunque el agente esté en línea. |
 | `/status` no responde | La tarea no arrancó. Mirá el Programador de tareas, `NissiImpresionCaja`, y `print_agent.log` en `agente_impresion`. |
 | Chrome dice que el certificado no es válido | Abrí `https://127.0.0.1:4171/status` y aceptá la excepción, o volvé a correr `install_autostart.ps1` con el usuario de la caja. |
 | Imprime en otra impresora | La predeterminada de Windows, o `name` en `config.ini`. |
