@@ -1,6 +1,6 @@
 <?php 
 
-	nissi_ensure_session();
+	ensure_session();
 	session_destroy();
 
 	header('location: ../');

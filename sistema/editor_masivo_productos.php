@@ -1,5 +1,5 @@
 <?php
-nissi_ensure_session();
+ensure_session();
 include "../conexion.php";
 
 if (!isset($_SESSION['active']) || ($_SESSION['rol'] != 1 && $_SESSION['rol'] != 2)) {

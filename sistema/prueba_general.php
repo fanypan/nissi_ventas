@@ -1,5 +1,5 @@
 <?php
-nissi_ensure_session();
+ensure_session();
 // Diagnóstico y Verificación General del Sistema de Código de Barras
 ?>
 <!DOCTYPE html>

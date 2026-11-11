@@ -27,7 +27,7 @@ file_put_contents(__DIR__ . '/logs/ajax_request.log', date('Y-m-d H:i:s') . " PO
 
 
 include_once __DIR__ . "/../conexion.php";
-nissi_ensure_session();
+ensure_session();
 
 if (!function_exists('ensurePrecioMayoristaColumn')) {
 	function ensurePrecioMayoristaColumn($conection) {

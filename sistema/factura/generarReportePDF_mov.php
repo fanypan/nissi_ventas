@@ -1,7 +1,7 @@
 <?php 
 
 	include "../../conexion.php";
-	nissi_ensure_session();
+	ensure_session();
 		require_once '../pdf/vendor/autoload.php';
 		use Dompdf\Dompdf;
 	 //Extraer datos del detalle_temp

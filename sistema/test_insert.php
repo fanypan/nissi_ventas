@@ -1,6 +1,6 @@
 <?php
 include "../conexion.php";
-nissi_ensure_session();
+ensure_session();
 
 $token = md5('1'); // Sample user token
 $codproducto = 1325; // Sample product ID from earlier dump

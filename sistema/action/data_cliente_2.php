@@ -2,7 +2,7 @@
 
 	include "../../conexion.php";
 	//include "../js/functions.js";
-	nissi_ensure_session();
+	ensure_session();
 
 //print_r($_POST);exit;
 	 //Extraer datos del detalle_temp

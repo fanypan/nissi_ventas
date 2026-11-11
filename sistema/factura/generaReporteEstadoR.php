@@ -1,6 +1,6 @@
 <?php
 // generarEstadoResultadosPDF.php
-nissi_ensure_session();
+ensure_session();
 
 if(empty($_SESSION['active'])) {
     header('location: ../');

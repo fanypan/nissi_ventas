@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 
 
 include "../conexion.php";
-nissi_ensure_session();
+ensure_session();
 
 //print_r($_POST);exit;
 

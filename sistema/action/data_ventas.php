@@ -1,7 +1,7 @@
 <?php
 
 include "../../conexion.php";
-nissi_ensure_session();
+ensure_session();
 
 // ============================================
 // FUNCIÓN PARA OBTENER TIPO DE PAGO EN LISTA

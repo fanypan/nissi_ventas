@@ -1,5 +1,5 @@
 <?php 
- 	nissi_ensure_session(); 
+ 	ensure_session(); 
 
 	header("Content-Type: Application/xls");
 	header("Content-Disposition: attachment; filename= lista de productos.xls");

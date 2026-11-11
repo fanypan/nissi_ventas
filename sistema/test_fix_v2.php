@@ -1,6 +1,6 @@
 <?php
 include "../conexion.php";
-nissi_ensure_session();
+ensure_session();
 
 // Mock session
 $_SESSION['idUser'] = 1;

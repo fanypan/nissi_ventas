@@ -1,5 +1,5 @@
 <?php 
- 	nissi_ensure_session(); 
+ 	ensure_session(); 
 
 	header("Content-Type: application/vnd.ms-excel; charset=utf-8");
 	header("Content-Disposition: attachment; filename= lista_productos.xls");

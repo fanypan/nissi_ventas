@@ -1,5 +1,5 @@
 <?php
-nissi_ensure_session();
+ensure_session();
 include "../conexion.php";
 ?>
 <!DOCTYPE html>

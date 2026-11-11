@@ -1,7 +1,7 @@
 <?php
 
-if (!function_exists('nissi_ensure_session')) {
-	function nissi_ensure_session(): void
+if (!function_exists('ensure_session')) {
+	function ensure_session(): void
 	{
 		if (session_status() !== PHP_SESSION_ACTIVE) {
 			session_start();
@@ -12,16 +12,16 @@ if (!function_exists('nissi_ensure_session')) {
 $script = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
 
 if (preg_match('/^(test_|trace_|debug_)/i', $script) || $script === 'ajax_debug.php') {
-	nissi_ensure_session();
+	ensure_session();
 	return;
 }
 
 if ($script === 'salir.php') {
-	nissi_ensure_session();
+	ensure_session();
 	return;
 }
 
-nissi_ensure_session();
+ensure_session();
 
 if (!empty($_SESSION['active'])) {
 	return;
